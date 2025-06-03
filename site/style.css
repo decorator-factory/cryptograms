@@ -1,0 +1,12 @@
+body {
+  font-family: sans-serif;
+
+  display: flex;
+  justify-content: center;
+}
+
+main {
+  padding: 1rem;
+  background: rgb(72, 141, 219);
+  color: white;
+}
