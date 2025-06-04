@@ -1,12 +1,127 @@
+:root {
+  --large-button-size: 96px;
+}
+
 body {
   font-family: sans-serif;
 
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr minmax(auto, 40rem) minmax(10rem, 1fr);
+  grid-template-rows: 1fr;
+  grid-template-areas: "controls puzzle details";
+
+  align-items: stretch;
+
+  /*
+  This is very important and different from height: 100%;
+  If height is 100%, then elements iwth "position: sticky" will
+  un-stick once you scroll past one screen's worth of vertical space.
+  */
+  height: auto;
+}
+
+.controls-panel {
+  grid-area: controls;
+  background: white;
+}
+
+main {
+  grid-area: puzzle;
+}
+
+.details-panel {
+  grid-area: details;
+  background: white;
+}
+
+.controls-panel,
+.details-panel,
+nav,
+.quote-author {
+  position: sticky;
+  top: 0px;
+}
+
+.btn-hamburger {
+  color: #aaa;
+  font-size: var(--large-button-size);
+  font-weight: 900;
+  background: none;
+  border: none;
+}
+
+.quote-author__name {
+  font-weight: 600;
+}
+
+@media (width < 768px) {
+  :root {
+    --large-button-size: 48px;
+  }
+
+  body {
+    grid-template-columns: 3rem auto;
+    grid-template-rows: min-content auto;
+    grid-template-areas:
+      "controls details"
+      "puzzle puzzle";
+  }
+
+  .details-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: end;
+    flex-wrap: wrap;
+  }
+
+  .quote-author {
+    display: flex;
+    gap: 1rem;
+    padding-right: 3rem;
+  }
+}
+
+@media (width >=768px) {
+  .controls-panel {
+    position: relative;
+    justify-self: right;
+    margin-top: 6rem;
+    top: 2rem;
+
+    button {
+      margin-left: auto;
+
+      /* Scale from 120px to 0px as the viewport width shrinks from 1300px to 900px */
+      margin-right: calc(max(0px, min((100vw - 900px) * (120 / (1300 - 900)), 120px)));
+    }
+  }
+
+  .details-panel {
+    justify-self: center;
+  }
+
+  .quote-author {
+    border-left: 1px solid #eee;
+    margin-top: 8rem;
+    top: 2rem;
+    padding-bottom: 2rem;
+    padding-left: 0.5rem;
+  }
 }
 
 main {
   padding: 1rem;
-  background: rgb(72, 141, 219);
-  color: white;
+}
+
+h1 {
+  font-size: 3rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #ccc;
+
+  @media (width <768px) {
+    display: none;
+  }
 }

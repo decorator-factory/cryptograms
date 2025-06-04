@@ -1,5 +1,9 @@
 const phrase = "all you need in this life is ignorance and confidence, and then success is sure"
 
-export function main(): void {
+type MainOptions = {
+  puzzleHost: HTMLElement,
+}
+
+export function main(opts: MainOptions): void {
   console.log("Hello from TypeScript")
 }

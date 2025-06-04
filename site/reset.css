@@ -31,7 +31,7 @@ ol[role='list'] {
 }
 
 /* Set core body defaults */
-body, html {
+html {
   height: 100%;
 }
 
