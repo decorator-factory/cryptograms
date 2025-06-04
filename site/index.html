@@ -4,14 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello, world!</title>
+  <title>Cryptogram</title>
   <link rel="stylesheet" href="./reset.css">
   <link rel="stylesheet" href="./style.css">
-  <script type="module">
-    import { main } from "./js/main.js"
-
-    main()
-  </script>
 </head>
 
 <body>
@@ -29,42 +24,17 @@
 
   <main>
     <h1>Cryptogram</h1>
-    <p>
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eu auctor ante. Donec justo felis, facilisis
-      vel nulla pulvinar, egestas tincidunt ante. Quisque ac sapien id nisi pharetra facilisis. Integer congue
-      ullamcorper risus, non aliquam velit dictum et. Donec gravida lacus et est aliquam, quis consectetur velit cursus.
-      Duis ornare ligula sit amet augue lacinia porttitor et non risus. Aenean et vehicula eros. Ut vitae accumsan urna.
-      Sed posuere vulputate sapien, eu tincidunt augue maximus ac. Nullam pharetra feugiat risus sit amet blandit. Ut
-      magna elit, imperdiet in urna sed, mollis porttitor nisl.
-    </p>
-
-    <p>
-
-      Proin volutpat sit amet libero eu hendrerit. Mauris id lectus a nulla ornare auctor. Praesent nec orci sapien.
-      Aliquam lobortis, nisi non vestibulum ornare, est urna convallis leo, eget euismod tellus augue nec ante. Cras
-      finibus sit amet orci vitae feugiat. Suspendisse rhoncus purus eros, sit amet malesuada est rhoncus non. In hac
-      habitasse platea dictumst. Vestibulum vitae justo mattis, dignissim purus quis, molestie enim. Sed quis viverra
-      urna.
-    </p>
-
-    <p>
-      Suspendisse potenti. In nec mi nisl. Phasellus pulvinar convallis porttitor. Phasellus mauris velit, iaculis ut
-      sem viverra, condimentum convallis arcu. Aliquam efficitur, dui nec tristique faucibus, nisl sem facilisis nibh,
-      at feugiat felis ipsum eu ex. Nunc iaculis lacus pharetra cursus accumsan. Sed pulvinar justo ac euismod finibus.
-      Proin consequat iaculis dolor, posuere pharetra magna tristique sit amet. Pellentesque non libero ut arcu pulvinar
-      venenatis vestibulum vitae orci. Sed laoreet luctus lectus. Aenean nec commodo nulla.
-    </p>
-
-    <p>
-      Fusce varius velit augue, a interdum sem gravida non. Nulla sagittis pellentesque mi, non imperdiet dolor iaculis
-      vitae. Phasellus fermentum semper justo, nec tincidunt leo. Aenean ultricies et sem nec efficitur. Vestibulum
-      condimentum tellus vel lectus finibus varius. Donec magna risus, vulputate non lorem ut, lobortis consequat
-      lectus. Maecenas nec facilisis nisl. Nunc vehicula purus nulla, sed iaculis tortor ultricies sed. Ut malesuada
-      justo sit amet nisi euismod condimentum. Nam vitae odio vel urna volutpat imperdiet et fringilla lectus.
-      Suspendisse sed quam dapibus, pulvinar nisi in, laoreet nibh. Aliquam dapibus lectus vel massa fringilla, sed
-      porta nulla aliquet. Quisque non erat arcu. Vestibulum eu mi eu mi auctor aliquam. Vivamus sit amet imperdiet mi.
-    </p>
+    <div class="cryptogram-words" id="cryptogram-words">
+    </div>
   </main>
+
+  <script type="module">
+    import { main } from "./js/main.js"
+
+    main({
+      cryptogramWordsNode: document.getElementById("cryptogram-words"),
+    })
+  </script>
 </body>
 
 </html>

@@ -125,3 +125,52 @@ h1 {
     display: none;
   }
 }
+
+/* Main puzzle styles */
+
+.cryptogram-words {
+  font-family: monospace;
+  font-size: 2rem;
+
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 1.2ch;
+}
+
+.word {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px;
+}
+
+.char {
+  min-width: 0;
+  width: calc(1ch + 6px);
+  padding: 3px;
+  line-height: 1;
+
+  border: none;
+  user-select: none;
+  cursor: default;
+
+  &:not(.char-punctuation) {
+    background: #eaeaea;
+    color: #bcbec0;
+  }
+
+  &.char-filled {
+    font-weight: 700;
+    background: #08074e;
+    color: rgb(237, 238, 255);
+  }
+
+  &:not(.char-punctuation):not(.char-filled):hover {
+    font-weight: 700;
+  }
+
+  &.selected {
+    font-weight: 700;
+    background: white;
+  }
+}
