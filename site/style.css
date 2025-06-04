@@ -145,8 +145,17 @@ h1 {
 }
 
 .char {
+  --hover-bg: #ffffff;
+  --hover-outline: #bbb;
+  --hover-color: #888;
+
+  --focus-bg: #cdcce9;
+  --focus-outline: black;
+  --focus-color: #6c6c99;
+
   min-width: 0;
   width: calc(1ch + 6px);
+  overflow: hidden;
   padding: 3px;
   line-height: 1;
 
@@ -156,21 +165,50 @@ h1 {
 
   &:not(.char-punctuation) {
     background: #eaeaea;
-    color: #bcbec0;
+    &::placeholder {
+      color: #9b9da0;
+    }
   }
 
   &.char-filled {
-    font-weight: 700;
-    background: #08074e;
-    color: rgb(237, 238, 255);
+    &:where(.char-wrong) {
+      background: #ebb0b0;
+      color: #df3620;
+    }
+
+    &:where(:not(.char-wrong)) {
+      background: #5553d8;
+      color: rgb(237, 238, 255);
+    }
+
+    --hover-bg: #3936c0;
+    --hover-color: rgb(203, 205, 240);
+    --hover-outline: none;
+
+    --focus-bg: #080735;
+    --focus-color: rgb(203, 205, 240);
+    --focus-outline: #6b69e7;
+  }
+
+  &.char-wrong {
+    --hover-bg: #df3620;
+    --hover-outline: #270000;
+    --hover-color: #ebb0b0;
+
+    --focus-bg: #5f1c1c;
+    --focus-outline: #270000;
+    --focus-color: #fff2cf;
   }
 
   &:not(.char-punctuation):not(.char-filled):hover {
     font-weight: 700;
   }
 
-  &.selected {
-    font-weight: 700;
-    background: white;
+  &::selection {
+    background: transparent;
+  }
+
+  &:where(.char-filled):focus {
+    outline: 2px solid var(--focus-outline);
   }
 }
