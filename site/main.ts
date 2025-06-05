@@ -17,34 +17,70 @@ function selectCharNode(node: HTMLInputElement | null) {
 }
 
 function createPuzzle(root: HTMLElement, seed: string) {
-  const words = seed.toLowerCase().split(" ")
+  const clueToNodes = defaultMap<HTMLInputElement[]>(() => [])
+  const allCharNodes: HTMLInputElement[] = []
 
-  const clueToNodes = new Map<string, HTMLInputElement[]>(ALL_LETTERS.map(char => [char, []]))
-
-  const allCharNodes: [string, HTMLInputElement][] = []
-  const wordStarts: HTMLInputElement[] = []
-  const wordEnds: HTMLInputElement[] = []
-
-  function onNewInputValue(char: string, node: HTMLInputElement) {
-    const newGuess = node.value.toLowerCase()[0]
+  function onNewInputValue(this: HTMLInputElement) {
+    const clue = getClue(this)
+    const newGuess = this.value.toLowerCase()[0]
     if (newGuess) {
-      for (const node of clueToNodes.get(char) || []) {
+      for (const node of clueToNodes.get(clue)) {
         node.value = newGuess
         node.classList.remove("char-wrong")
         node.classList.add("char-filled")
       }
-      selectCharNode(findNextFreeNode(char, node))
+      selectCharNode(findNextFreeNode(this))
     } else {
       // Backspace is handled directly, but text can be erased
       // in other ways (like Delete and Ctrl+X)
-      eraseCell(char)
-      selectCharNode(findPrevNode(char, node))
+      eraseClue(clue)
+      selectCharNode(findPrevNode(this))
     }
     markRepeatedGuesses()
   }
 
-  function eraseCell(char: string) {
-    for (const node of clueToNodes.get(char) || []) {
+  function onKeyPressed(this: HTMLInputElement, e: KeyboardEvent) {
+    switch (e.key) {
+      case "Backspace":
+        // This is needed to move
+        eraseClue(getClue(this))
+        selectCharNode(findPrevNode(this))
+
+        // Prevent the previous node from being erased as well:
+        e.stopPropagation()
+        e.preventDefault()
+        break
+
+      case "ArrowRight":
+        if (e.ctrlKey)
+          selectCharNode(isWordEnd(this) ? findNextNode(this) : findNextWordEnd(this))
+        else if (e.shiftKey)
+          selectCharNode(findNextFreeNode(this))
+        else
+          selectCharNode(findNextNode(this))
+        break
+
+      case "ArrowLeft":
+        if (e.ctrlKey)
+          selectCharNode(isWordStart(this) ? findPrevNode(this) : findPrevWordStart(this))
+        else if (e.shiftKey)
+          selectCharNode(findPrevFreeNode(this))
+        else
+          selectCharNode(findPrevNode(this))
+        break
+
+      case "Home":
+        allCharNodes[0]!.select()
+        break
+
+      case "End":
+        allCharNodes[allCharNodes.length - 1]!.select()
+        break
+    }
+  }
+
+  function eraseClue(clue: string) {
+    for (const node of clueToNodes.get(clue)) {
       node.value = ""
       node.classList.remove("char-filled")
       node.classList.remove("char-wrong")
@@ -52,63 +88,73 @@ function createPuzzle(root: HTMLElement, seed: string) {
   }
 
   function markRepeatedGuesses() {
-    const guessToClue = new Map<string, string>()
+    const guessToFirstClue = new Map<string, string>()
     const cluesWithMistakes = new Set<string>()
 
-    for (const [clue, node] of allCharNodes) {
+    for (const node of allCharNodes) {
       node.classList.remove("char-wrong")
 
       if (!node.value)
         continue
 
-      let prevClue = guessToClue.get(node.value)
+      const clue = getClue(node)
+      let prevClue = guessToFirstClue.get(node.value)
       if (prevClue && prevClue !== clue) {
         cluesWithMistakes.add(prevClue)
         cluesWithMistakes.add(clue)
       } else {
-        guessToClue.set(node.value, clue)
+        guessToFirstClue.set(node.value, clue)
       }
     }
 
     for (const clue of cluesWithMistakes)
-      for (const node of clueToNodes.get(clue)!)
+      for (const node of clueToNodes.get(clue))
         node.classList.add("char-wrong")
   }
 
-  function _searchNode(
+  function _searchNextNode(
     node: HTMLInputElement,
-    nodes: Iterable<[string, HTMLInputElement]>,
-    predicate: (char: string, node: HTMLInputElement) => boolean,
+    nodes: Iterable<HTMLInputElement>,
+    predicate: (node: HTMLInputElement) => boolean,
   ): HTMLInputElement | null {
-    let foundOurPosition = false
-    for (const [ch, n] of nodes) {
-      if (n === node)
-        foundOurPosition = true
-      else if (foundOurPosition && predicate(ch, n))
-        return n
-    }
+    let foundMe = false
+    for (const n of nodes)
+      if (foundMe) {
+        if (predicate(n))
+          return n
+      } else if (n === node) {
+        foundMe = true
+      }
     return null
   }
 
   const findNextWordEnd = (node: HTMLInputElement) =>
-    _searchNode(node, allCharNodes, (ch, n) => wordEnds.includes(n))
+    _searchNextNode(node, allCharNodes, isWordEnd)
 
   const findPrevWordStart = (node: HTMLInputElement) =>
-    _searchNode(node, reverse(allCharNodes), (ch, n) => wordStarts.includes(n))
+    _searchNextNode(node, reverse(allCharNodes), isWordStart)
 
-  const findNextNode = (char: string, node: HTMLInputElement) =>
-    _searchNode(node, allCharNodes, (ch) => ch !== char)
+  const findNextNode = (node: HTMLInputElement) => {
+    const clue = getClue(node)
+    return _searchNextNode(node, allCharNodes, n => getClue(n) !== clue)
+  }
 
-  const findPrevNode = (char: string, node: HTMLInputElement) =>
-    _searchNode(node, reverse(allCharNodes), (ch) => ch !== char)
+  const findPrevNode = (node: HTMLInputElement) => {
+    const clue = getClue(node)
+    return _searchNextNode(node, reverse(allCharNodes), n => getClue(n) !== clue)
+  }
 
-  const findNextFreeNode = (char: string, node: HTMLInputElement) =>
-    _searchNode(node, allCharNodes, (ch, n) => ch !== char && n.value === "")
+  const findNextFreeNode = (node: HTMLInputElement) => {
+    const clue = getClue(node)
+    return _searchNextNode(node, allCharNodes, n => getClue(n) !== clue && n.value === "")
+  }
 
-  const findPrevFreeNode = (char: string, node: HTMLInputElement) =>
-    _searchNode(node, reverse(allCharNodes), (ch, n) => ch !== char && n.value === "")
+  const findPrevFreeNode = (node: HTMLInputElement) => {
+    const clue = getClue(node)
+    return _searchNextNode(node, reverse(allCharNodes), n => getClue(n) !== clue && n.value === "")
+  }
 
-  for (const word of words) {
+  for (const word of seed.toLowerCase().split(" ")) {
     const wordNode = document.createElement("div")
     wordNode.classList.add("word")
 
@@ -119,87 +165,54 @@ function createPuzzle(root: HTMLElement, seed: string) {
         charNode.placeholder = clue
         wordNode.appendChild(charNode)
 
-        charNode.addEventListener("input", () => { onNewInputValue(clue, charNode) })
-        charNode.addEventListener("focus", () => { charNode.select() })
-        charNode.addEventListener("selectionchange", (e) => {
-          // Force selection to only be one of:
-          // - 0..0 if the input is empty
-          // - 0..0 if the input is filled -- that's fine, since
-          //   onNewInputValue takes the first charatcer
-          // - 0..1 to select the first character
+        charNode.addEventListener("input", onNewInputValue)
+        charNode.addEventListener("focus", function () { this.select })
+        charNode.addEventListener("selectionchange", fixSelection)
+        charNode.addEventListener("keydown", onKeyPressed)
 
-          // this will avoid strange surprises, especially on mobile, and especially since
-          // "native" selection styles are hidden
-
-          const [start, end] = [charNode.selectionStart, charNode.selectionEnd]
-
-          if (start !== 0 || (end !== 0 && end !== 1)) {
-            charNode.setSelectionRange(0, 1)
-          }
-        })
-
-        charNode.addEventListener("keydown", (e) => {
-          switch (e.key) {
-            case "Backspace":
-              eraseCell(clue)
-              selectCharNode(findPrevNode(clue, charNode))
-              e.stopPropagation()
-              e.preventDefault()
-              break
-
-            case "ArrowRight":
-              if (e.ctrlKey) {
-                selectCharNode(
-                  wordEnds.includes(charNode)
-                    ? findNextNode(clue, charNode)
-                    : findNextWordEnd(charNode)
-                )
-              } else if (e.shiftKey) {
-                selectCharNode(findNextFreeNode(clue, charNode))
-              } else {
-                selectCharNode(findNextNode(clue, charNode))
-              }
-              break
-
-            case "ArrowLeft":
-              if (e.ctrlKey) {
-                selectCharNode(
-                  wordStarts.includes(charNode)
-                    ? findPrevNode(clue, charNode)
-                    : findPrevWordStart(charNode)
-                )
-              } else if (e.shiftKey) {
-                selectCharNode(findPrevFreeNode(clue, charNode))
-              } else {
-                selectCharNode(findPrevNode(clue, charNode))
-              }
-              break
-
-            case "Home":
-              allCharNodes[0]![1].select()
-              break
-
-            case "End":
-              allCharNodes[allCharNodes.length - 1]![1].select()
-              break
-          }
-        })
-
-        clueToNodes.get(clue)!.push(charNode)
-        allCharNodes.push([clue, charNode])
+        setClue(charNode, clue)
+        clueToNodes.get(clue).push(charNode)
+        allCharNodes.push(charNode)
       } else {
         const charNode = document.createElement("div")
-        charNode.classList.add("char")
-        charNode.classList.add("char-punctuation")
+        charNode.classList.add("char", "char-punctuation")
         charNode.innerText = clue
         wordNode.appendChild(charNode)
       }
     }
 
-    wordStarts.push(wordNode.firstChild as HTMLInputElement)
-    wordEnds.push(wordNode.lastChild as HTMLInputElement)
     root.appendChild(wordNode)
   }
+}
+
+function getClue(node: HTMLInputElement): string {
+  const { clue } = node.dataset
+  if (!clue)
+    throw new Error("Node has no `clue` data attribute")
+  return clue
+}
+
+function setClue(node: HTMLInputElement, clue: string) {
+  node.dataset.clue = clue
+}
+
+function isWordStart(node: HTMLInputElement): boolean {
+  return node.parentNode?.firstChild === node
+}
+
+function isWordEnd(node: HTMLInputElement): boolean {
+  return node.parentNode?.lastChild === node
+}
+
+function fixSelection(this: HTMLInputElement) {
+  // Force selection to only be one of:
+  // - 0..0 if the input is empty
+  // - 0..0 if the input is filled -- that's fine, since
+  //   onNewInputValue takes the first charatcer
+  // - 0..1 to select the first character
+  const { selectionStart: start, selectionEnd: end } = this
+  if (start !== 0 || (end !== 0 && end !== 1))
+    this.setSelectionRange(0, 1)
 }
 
 
@@ -255,7 +268,24 @@ function generateStyles() {
 // Utility functions
 
 function* reverse<T>(items: readonly T[]) {
-  for (let i = items.length - 1; i >= 0; i--) {
+  for (let i = items.length - 1; i >= 0; i--)
     yield items[i] as T
+}
+
+function defaultMap<V>(init: () => V) {
+  const map = new Map<string, V>()
+  return {
+    get: (key: string): V => {
+      if (map.has(key)) {
+        return map.get(key) as V
+      } else {
+        const v = init()
+        map.set(key, v)
+        return v
+      }
+    },
+    set: (key: string, value: V) => {
+      map.set(key, value)
+    },
   }
 }
