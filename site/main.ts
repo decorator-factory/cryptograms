@@ -4,7 +4,6 @@ type MainOptions = {
 
 export function main(opts: MainOptions): void {
   generateStyles()
-
   createPuzzle(
     opts.cryptogramWordsNode,
     "svv wgr zqqo lz hila vltq la lkzgusznq szo ngztloqznq, szo hiqz arnnqaa la aruq.",
@@ -20,32 +19,31 @@ function selectCharNode(node: HTMLInputElement | null) {
 function createPuzzle(root: HTMLElement, seed: string) {
   const words = seed.toLowerCase().split(" ")
 
-  const clueToNodes = new Map<string, HTMLInputElement[]>(
-    [...ALL_LETTERS].map(char => [char, []]))
+  const clueToNodes = new Map<string, HTMLInputElement[]>(ALL_LETTERS.map(char => [char, []]))
 
   const allCharNodes: [string, HTMLInputElement][] = []
   const wordStarts: HTMLInputElement[] = []
   const wordEnds: HTMLInputElement[] = []
 
-  const onNewInputValue = (char: string, node: HTMLInputElement) => {
+  function onNewInputValue(char: string, node: HTMLInputElement) {
     const newGuess = node.value.toLowerCase()[0]
     if (newGuess) {
-      if (ALL_LETTERS.includes(newGuess)) {
-        for (const node of clueToNodes.get(char) || []) {
-          node.value = newGuess
-          node.classList.remove("char-wrong")
-          node.classList.add("char-filled")
-        }
-        selectCharNode(nextFreeNode(char, node))
+      for (const node of clueToNodes.get(char) || []) {
+        node.value = newGuess
+        node.classList.remove("char-wrong")
+        node.classList.add("char-filled")
       }
+      selectCharNode(findNextFreeNode(char, node))
     } else {
-      eraseCell(char, node)
-      selectCharNode(anyPrevNode(char, node))
+      // Backspace is handled directly, but text can be erased
+      // in other ways (like Delete and Ctrl+X)
+      eraseCell(char)
+      selectCharNode(findPrevNode(char, node))
     }
     markRepeatedGuesses()
   }
 
-  const eraseCell = (char: string, node: HTMLInputElement) => {
+  function eraseCell(char: string) {
     for (const node of clueToNodes.get(char) || []) {
       node.value = ""
       node.classList.remove("char-filled")
@@ -53,8 +51,9 @@ function createPuzzle(root: HTMLElement, seed: string) {
     }
   }
 
-  const markRepeatedGuesses = () => {
-    const guessToClues = new Map<string, Set<string>>()
+  function markRepeatedGuesses() {
+    const guessToClue = new Map<string, string>()
+    const cluesWithMistakes = new Set<string>()
 
     for (const [clue, node] of allCharNodes) {
       node.classList.remove("char-wrong")
@@ -62,58 +61,52 @@ function createPuzzle(root: HTMLElement, seed: string) {
       if (!node.value)
         continue
 
-      let clues = guessToClues.get(node.value)
-      if (clues)
-        clues.add(clue)
-      else
-        guessToClues.set(node.value, new Set([clue]))
+      let prevClue = guessToClue.get(node.value)
+      if (prevClue && prevClue !== clue) {
+        cluesWithMistakes.add(prevClue)
+        cluesWithMistakes.add(clue)
+      } else {
+        guessToClue.set(node.value, clue)
+      }
     }
-
-    const cluesWithMistakes =
-      [...guessToClues.entries()]
-        .filter(([_, clues]) => clues.size > 1)
-        .flatMap(([_, clues]) => [...clues])
 
     for (const clue of cluesWithMistakes)
       for (const node of clueToNodes.get(clue)!)
         node.classList.add("char-wrong")
-
-
   }
 
-  const findNextNode = (
-    char: string,
+  function _searchNode(
     node: HTMLInputElement,
-    nodes: [string, HTMLInputElement][],
+    nodes: Iterable<[string, HTMLInputElement]>,
     predicate: (char: string, node: HTMLInputElement) => boolean,
-  ): HTMLInputElement | null => {
-    let foundOurPosition = false;
+  ): HTMLInputElement | null {
+    let foundOurPosition = false
     for (const [ch, n] of nodes) {
       if (n === node)
         foundOurPosition = true
-      else if (foundOurPosition && ch !== char && predicate(ch, n))
+      else if (foundOurPosition && predicate(ch, n))
         return n
     }
     return null
   }
 
-  const nextWordEnd = (char: string, node: HTMLInputElement) =>
-    findNextNode(char, node, allCharNodes, (ch, n) => wordEnds.includes(n))
+  const findNextWordEnd = (node: HTMLInputElement) =>
+    _searchNode(node, allCharNodes, (ch, n) => wordEnds.includes(n))
 
-  const prevWordStart = (char: string, node: HTMLInputElement) =>
-    findNextNode(char, node, [...allCharNodes].reverse(), (ch, n) => wordStarts.includes(n))
+  const findPrevWordStart = (node: HTMLInputElement) =>
+    _searchNode(node, reverse(allCharNodes), (ch, n) => wordStarts.includes(n))
 
-  const anyNextNode = (char: string, node: HTMLInputElement) =>
-    findNextNode(char, node, allCharNodes, () => true)
+  const findNextNode = (char: string, node: HTMLInputElement) =>
+    _searchNode(node, allCharNodes, (ch) => ch !== char)
 
-  const anyPrevNode = (char: string, node: HTMLInputElement) =>
-    findNextNode(char, node, [...allCharNodes].reverse(), () => true)
+  const findPrevNode = (char: string, node: HTMLInputElement) =>
+    _searchNode(node, reverse(allCharNodes), (ch) => ch !== char)
 
-  const nextFreeNode = (char: string, node: HTMLInputElement) =>
-    findNextNode(char, node, allCharNodes, (ch, n) => n.value === "")
+  const findNextFreeNode = (char: string, node: HTMLInputElement) =>
+    _searchNode(node, allCharNodes, (ch, n) => ch !== char && n.value === "")
 
-  const prevFreeNode = (prevChar: string, prevNode: HTMLInputElement) =>
-    findNextNode(prevChar, prevNode, [...allCharNodes].reverse(), (ch, n) => n.value === "")
+  const findPrevFreeNode = (char: string, node: HTMLInputElement) =>
+    _searchNode(node, reverse(allCharNodes), (ch, n) => ch !== char && n.value === "")
 
   for (const word of words) {
     const wordNode = document.createElement("div")
@@ -146,37 +139,49 @@ function createPuzzle(root: HTMLElement, seed: string) {
         })
 
         charNode.addEventListener("keydown", (e) => {
-          if (e.key === "Backspace") {
-            eraseCell(clue, charNode)
-            selectCharNode(anyPrevNode(clue, charNode))
-            e.stopPropagation()
-            e.preventDefault()
-          } else if (e.key === "ArrowRight") {
-            if (e.ctrlKey) {
-              if (wordEnds.includes(charNode))
-                selectCharNode(anyNextNode(clue, charNode))
-              else
-                selectCharNode(nextWordEnd(clue, charNode))
-            } else if (e.shiftKey) {
-              selectCharNode(nextFreeNode(clue, charNode))
-            } else {
-              selectCharNode(anyNextNode(clue, charNode))
-            }
-          } else if (e.key === "ArrowLeft") {
-            if (e.ctrlKey) {
-              if (wordStarts.includes(charNode))
-                selectCharNode(anyPrevNode(clue, charNode))
-              else
-                selectCharNode(prevWordStart(clue, charNode))
-            } else if (e.shiftKey) {
-              selectCharNode(prevFreeNode(clue, charNode))
-            } else {
-              selectCharNode(anyPrevNode(clue, charNode))
-            }
-          } else if (e.key === "Home") {
-            allCharNodes[0]![1].select()
-          } else if (e.key === "End") {
-            allCharNodes[allCharNodes.length - 1]![1].select()
+          switch (e.key) {
+            case "Backspace":
+              eraseCell(clue)
+              selectCharNode(findPrevNode(clue, charNode))
+              e.stopPropagation()
+              e.preventDefault()
+              break
+
+            case "ArrowRight":
+              if (e.ctrlKey) {
+                selectCharNode(
+                  wordEnds.includes(charNode)
+                    ? findNextNode(clue, charNode)
+                    : findNextWordEnd(charNode)
+                )
+              } else if (e.shiftKey) {
+                selectCharNode(findNextFreeNode(clue, charNode))
+              } else {
+                selectCharNode(findNextNode(clue, charNode))
+              }
+              break
+
+            case "ArrowLeft":
+              if (e.ctrlKey) {
+                selectCharNode(
+                  wordStarts.includes(charNode)
+                    ? findPrevNode(clue, charNode)
+                    : findPrevWordStart(charNode)
+                )
+              } else if (e.shiftKey) {
+                selectCharNode(findPrevFreeNode(clue, charNode))
+              } else {
+                selectCharNode(findPrevNode(clue, charNode))
+              }
+              break
+
+            case "Home":
+              allCharNodes[0]![1].select()
+              break
+
+            case "End":
+              allCharNodes[allCharNodes.length - 1]![1].select()
+              break
           }
         })
 
@@ -198,7 +203,7 @@ function createPuzzle(root: HTMLElement, seed: string) {
 }
 
 
-const ALL_LETTERS = "abcdefghijklmnopqrstuvwxyz"
+const ALL_LETTERS: readonly string[] = [..."abcdefghijklmnopqrstuvwxyz"]
 
 /**
  * We need this behaviour: if any e.g. letter K is hovered (or focused),
@@ -214,32 +219,43 @@ const ALL_LETTERS = "abcdefghijklmnopqrstuvwxyz"
  * ```
  */
 function generateStyles() {
-  // TODO: this extremely cursed and doesn't scale to other languages. Hopefully there's a better way.
+  // TODO: this is cursed and doesn't scale to other languages.
+  // Hopefully there's a better way.
 
   const styleNode = document.createElement("style")
-  let text = ""
 
-  text +=
-    [...ALL_LETTERS]
+  const hoverSelectors =
+    ALL_LETTERS
       .map(char => `.cryptogram-words:has(.char.letter--${char}:hover) .letter--${char}`)
-      .join(",\n")
-  text += ` {
-    background: var(--hover-bg);
-    outline: 1px solid var(--hover-outline);
-    color: var(--hover-color);
-  }\n`
+      .join(",")
 
-  text +=
-    [...ALL_LETTERS]
+  const focusSelectors =
+    ALL_LETTERS
       .map(char => `.cryptogram-words:has(.char.letter--${char}:focus) .letter--${char}`)
-      .join(",\n")
+      .join(",")
 
-  text += ` {
-    background: var(--focus-bg);
-    &::placeholder { color: var(--focus-color); }
-  }\n`
+  styleNode.textContent = `
+    ${hoverSelectors} {
+      background: var(--hover-bg);
+      outline: 1px solid var(--hover-outline);
+      color: var(--hover-color);
+    }
+
+    ${focusSelectors} {
+      background: var(--focus-bg);
+      &::placeholder{
+        color: var(--focus-color);
+      }
+    }
+  `
+  document.head.appendChild(styleNode)
+}
 
 
-  styleNode.innerHTML = text
-  document.body.appendChild(styleNode)
+// Utility functions
+
+function* reverse<T>(items: readonly T[]) {
+  for (let i = items.length - 1; i >= 0; i--) {
+    yield items[i] as T
+  }
 }
