@@ -197,11 +197,13 @@ function setClue(node: HTMLInputElement, clue: string) {
 }
 
 function isWordStart(node: HTMLInputElement): boolean {
-  return node.parentNode?.firstChild === node
+  const prev = node.previousSibling as HTMLElement | null
+  return !prev || prev.classList.contains("char-punctuation")
 }
 
 function isWordEnd(node: HTMLInputElement): boolean {
-  return node.parentNode?.lastChild === node
+  const next = node.nextSibling as HTMLElement | null
+  return !next || next.classList.contains("char-punctuation")
 }
 
 function fixSelection(this: HTMLInputElement) {
