@@ -136,7 +136,7 @@ h1 {
   font-family: var(--font-family-mono);
   font-size: 2rem;
 
-  @media (width < 340px) {
+  @media (width < 640px) {
     font-size: 1.5rem;
   }
 
