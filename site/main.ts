@@ -85,6 +85,7 @@ class Puzzle {
         // This is needed to move
         this.eraseClue(getClue(node))
         selectCharNode(this.findPrevNode(node))
+        this.markRepeatedGuesses()
 
         // Prevent the previous node from being erased as well:
         e.stopPropagation()
