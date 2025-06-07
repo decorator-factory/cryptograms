@@ -163,8 +163,8 @@ h1 {
 .char {
   position: relative;
 
-  width: calc(1ch + 4px);
-  padding-inline: 2px;
+  width: calc(1ch + 6px);
+  padding-inline: 3px;
   padding-block: 2px;
   line-height: 85%;
   text-transform: uppercase;

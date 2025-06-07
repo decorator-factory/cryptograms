@@ -1,13 +1,11 @@
 type MainOptions = {
   cryptogramWordsNode: HTMLElement,
+  phrase: string,
 }
 
 export function main(opts: MainOptions): void {
   generateStyles()
-  const puzzle = Puzzle.createAt(
-    opts.cryptogramWordsNode,
-    "ucub qv q abun xtdx xwgwjjwn xtu nwjem nwkem ow xw fquruh, q nwkem hxqee fedbx gz dffeu xjuu.",
-  )
+  const puzzle = Puzzle.createAt(opts.cryptogramWordsNode, opts.phrase)
 }
 
 
