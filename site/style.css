@@ -1,12 +1,15 @@
 :root {
   --large-button-size: 96px;
+
+  --font-family-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  --font-family-sans: Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif;
 }
 
 body {
-  font-family: sans-serif;
+  font-family: var(--font-family-sans);
 
   display: grid;
-  grid-template-columns: 1fr minmax(auto, 40rem) minmax(10rem, 1fr);
+  grid-template-columns: 1fr minmax(auto, 45rem) minmax(10rem, 1fr);
   grid-template-rows: 1fr;
   grid-template-areas: "controls puzzle details";
 
@@ -38,6 +41,7 @@ main {
 .details-panel,
 nav,
 .quote-author {
+  z-index: 100;
   position: sticky;
   top: 0px;
 }
@@ -92,8 +96,8 @@ nav,
     button {
       margin-left: auto;
 
-      /* Scale from 120px to 0px as the viewport width shrinks from 1300px to 900px */
-      margin-right: calc(max(0px, min((100vw - 900px) * (120 / (1300 - 900)), 120px)));
+      /* Scale from 120px to 0px as the viewport width shrinks from 1200px to 900px */
+      margin-right: calc(max(0px, min((100vw - 800px) * (120 / (1200 - 800)), 120px)));
     }
   }
 
@@ -129,86 +133,89 @@ h1 {
 /* Main puzzle styles */
 
 .cryptogram-words {
-  font-family: monospace;
+  font-family: var(--font-family-mono);
   font-size: 2rem;
+
+  @media (width < 340px) {
+    font-size: 1.5rem;
+  }
 
   display: flex;
   flex-wrap: wrap;
 
-  gap: 1.2ch;
+  gap: 0.66ch calc(1ch + 4px);
 }
 
 .word {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 3px;
+
+  /*
+  Avoid overflow when the viewport is *really* small.
+  This doesn't cause wrapping if there's still space for the parent
+  flexbox (.cryptogram-words) to wrap.
+  */
+  flex-wrap: wrap;
+
+  align-items: center;
+
 }
 
 .char {
-  --hover-bg: #ffffff;
-  --hover-outline: #bbb;
-  --hover-color: #888;
+  position: relative;
 
-  --focus-bg: #cdcce9;
-  --focus-outline: black;
-  --focus-color: #6c6c99;
-
-  min-width: 0;
-  width: calc(1ch + 6px);
-  overflow: hidden;
-  padding: 3px;
-  line-height: 1;
+  width: calc(1ch + 4px);
+  padding-inline: 2px;
+  padding-block: 2px;
+  line-height: 85%;
+  text-transform: uppercase;
 
   border: none;
   user-select: none;
+  -webkit-user-select: none;
   cursor: default;
+  caret-color: transparent;
 
-  &:not(.char-punctuation) {
-    background: #eaeaea;
-    &::placeholder {
-      color: #9b9da0;
-    }
+  transition:
+    filter 0.1s,
+    background 0.2s,
+    color 0.2s;
+
+  &:where(:not(.char-punctuation)) {
+    background: #f0f0f0;
   }
 
   &.char-filled {
-    &:where(.char-wrong) {
-      background: #ebb0b0;
-      color: #df3620;
-    }
-
-    &:where(:not(.char-wrong)) {
-      background: #5553d8;
-      color: rgb(237, 238, 255);
-    }
-
-    --hover-bg: #3936c0;
-    --hover-color: rgb(203, 205, 240);
-    --hover-outline: none;
-
-    --focus-bg: #080735;
-    --focus-color: rgb(203, 205, 240);
-    --focus-outline: #6b69e7;
-  }
-
-  &.char-wrong {
-    --hover-bg: #df3620;
-    --hover-outline: #270000;
-    --hover-color: #ebb0b0;
-
-    --focus-bg: #5f1c1c;
-    --focus-outline: #270000;
-    --focus-color: #fff2cf;
-  }
-
-  &:not(.char-punctuation):not(.char-filled):hover {
-    font-weight: 700;
+    background: rgb(103, 108, 148);
+    color: white;
   }
 
   &::selection {
     background: transparent;
   }
 
-  &:where(.char-filled):focus {
-    outline: 2px solid var(--focus-outline);
+  &::placeholder {
+    color: #a7a7a7;
   }
+
+  &:focus {
+    outline: 2px solid black;
+  }
+
+  &:hover {
+    filter: brightness(0.85);
+  }
+}
+
+.char.char-wrong {
+  background: rgb(185, 34, 29);
+
+  &:focus {
+    outline: 2px solid rgb(59, 0, 0);
+  }
+
+  z-index: 3;
+}
+
+.char.char:focus {
+  z-index: 4;
 }

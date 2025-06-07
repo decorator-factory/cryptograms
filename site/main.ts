@@ -6,7 +6,7 @@ export function main(opts: MainOptions): void {
   generateStyles()
   const puzzle = Puzzle.createAt(
     opts.cryptogramWordsNode,
-    "svv wgr zqqo lz hila vltq la lkzgusznq szo ngztloqznq, szo hiqz arnnqaa la aruq.",
+    "jtvhrpayx an jtvhrpayx. ej ndyvbt bjrkx jfjkwpdaxo rxt pdjx hdyynj edahd srpd py qybbye. jtvhrpayx an xjapdjk jrnpjkx xyk ejnpjkx, ap an dvirx.",
   )
 }
 
@@ -34,7 +34,7 @@ class Puzzle {
       for (const clue of word) {
         if (ALL_LETTERS.includes(clue)) {
           const charNode = document.createElement("input")
-          charNode.classList.add("char", `letter--${clue}`)
+          charNode.classList.add("char")
           charNode.placeholder = clue
           wordNode.appendChild(charNode)
 
@@ -62,7 +62,7 @@ class Puzzle {
 
   private onNewInputValue(charNode: HTMLInputElement) {
     const clue = getClue(charNode)
-    const newGuess = charNode.value.toLowerCase()[0]
+    const newGuess = charNode.value.trim().toLowerCase()[0]
     if (newGuess) {
       for (const node of this.clueToNodes.get(clue)) {
         node.value = newGuess
@@ -240,10 +240,10 @@ function fixSelection(this: HTMLInputElement) {
  * this sort:
  *
  * ```css
- * .container:has(.letter--a:hover)  .letter-a,
- * .container:has(.letter--b:hover)  .letter-b,
+ * *:where(.container:has([data-clue="a"]:hover)) [data-clue="a"],
+ * *:where(.container:has([data-clue="b"]:hover)) [data-clue="b"],
  * ...
- * .container:has(.letter--z:hover)  .letter-z { ...properties... }
+ * *:where(.container:has([data-clue="z"]:hover)) [data-clue="z"] { ...properties... }
  * ```
  */
 function generateStyles() {
@@ -252,28 +252,30 @@ function generateStyles() {
 
   const styleNode = document.createElement("style")
 
+  // Both should have a specificity of 0,1,0
   const hoverSelectors =
     ALL_LETTERS
-      .map(char => `.cryptogram-words:has(.char.letter--${char}:hover) .letter--${char}`)
-      .join(",")
+      .map(char => `*:where(.cryptogram-words:has([data-clue="${char}"]:hover)) [data-clue="${char}"]`)
+      .join(",\n")
 
   const focusSelectors =
     ALL_LETTERS
-      .map(char => `.cryptogram-words:has(.char.letter--${char}:focus) .letter--${char}`)
-      .join(",")
+      .map(char => `*:where(.cryptogram-words:has([data-clue="${char}"]:focus)) [data-clue="${char}"]`)
+      .join(",\n")
 
   styleNode.textContent = `
     ${hoverSelectors} {
-      background: var(--hover-bg);
-      outline: 1px solid var(--hover-outline);
-      color: var(--hover-color);
+      filter: brightness(0.9);
+      z-index: 1;
     }
 
     ${focusSelectors} {
-      background: var(--focus-bg);
-      &::placeholder{
-        color: var(--focus-color);
+      background: rgb(197, 221, 228);
+      color: rgb(120, 137, 151);
+      &::placeholder {
+        color: rgb(120, 137, 151);
       }
+      z-index: 2;
     }
   `
   document.head.appendChild(styleNode)
