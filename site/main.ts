@@ -6,7 +6,7 @@ export function main(opts: MainOptions): void {
   generateStyles()
   const puzzle = Puzzle.createAt(
     opts.cryptogramWordsNode,
-    "jtvhrpayx an jtvhrpayx. ej ndyvbt bjrkx jfjkwpdaxo rxt pdjx hdyynj edahd srpd py qybbye. jtvhrpayx an xjapdjk jrnpjkx xyk ejnpjkx, ap an dvirx.",
+    "ucub qv q abun xtdx xwgwjjwn xtu nwjem nwkem ow xw fquruh, q nwkem hxqee fedbx gz dffeu xjuu.",
   )
 }
 
@@ -40,7 +40,7 @@ class Puzzle {
 
           charNode.addEventListener("input", () => puzzle.onNewInputValue(charNode))
           charNode.addEventListener("focus", function () { this.select() })
-          charNode.addEventListener("selectionchange", fixSelection)
+          charNode.addEventListener("selectionchange", preventSelection)
           charNode.addEventListener("keydown", e => puzzle.onKeyPressed(charNode, e))
 
           setClue(charNode, clue)
@@ -71,10 +71,9 @@ class Puzzle {
       }
       selectCharNode(this.findNextFreeNode(charNode))
     } else {
-      // Backspace is handled directly, but text can be erased
-      // in other ways (like Delete and Ctrl+X)
+      // Backspace is handled directly, but text can be erased in other ways.
+      // So in this case we don't move backwards
       this.eraseClue(clue)
-      selectCharNode(this.findPrevNode(charNode))
     }
     this.markRepeatedGuesses()
   }
@@ -82,7 +81,8 @@ class Puzzle {
   private onKeyPressed(node: HTMLInputElement, e: KeyboardEvent) {
     switch (e.key) {
       case "Backspace":
-        // This is needed to move
+        // Handling Backspace manually is needed to move the selection backwards
+        // even if there's nothing in the cell.
         this.eraseClue(getClue(node))
         selectCharNode(this.findPrevNode(node))
         this.markRepeatedGuesses()
@@ -223,15 +223,9 @@ function isWordEnd(node: HTMLInputElement): boolean {
   return !next || next.classList.contains("char-punctuation")
 }
 
-function fixSelection(this: HTMLInputElement) {
-  // Force selection to only be one of:
-  // - 0..0 if the input is empty
-  // - 0..0 if the input is filled -- that's fine, since
-  //   onNewInputValue takes the first charatcer
-  // - 0..1 to select the first character
-  const { selectionStart: start, selectionEnd: end } = this
-  if (start !== 0 || (end !== 0 && end !== 1))
-    this.setSelectionRange(0, 1)
+function preventSelection(this: HTMLInputElement) {
+  if (this.selectionStart !== null || this.selectionEnd !== null)
+    this.setSelectionRange(null, null)
 }
 
 /**
