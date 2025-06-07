@@ -14,13 +14,6 @@ body {
   grid-template-areas: "controls puzzle details";
 
   align-items: stretch;
-
-  /*
-  This is very important and different from height: 100%;
-  If height is 100%, then elements iwth "position: sticky" will
-  un-stick once you scroll past one screen's worth of vertical space.
-  */
-  height: auto;
 }
 
 .controls-panel {
@@ -194,7 +187,7 @@ h1 {
   }
 
   &::placeholder {
-    color: #a7a7a7;
+    color: #bfbfbf;
   }
 
   &:focus {

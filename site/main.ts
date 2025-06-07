@@ -67,7 +67,7 @@ class Puzzle {
         node.classList.remove("char-wrong")
         node.classList.add("char-filled")
       }
-      selectCharNode(this.findNextFreeNode(charNode))
+      selectCharNode(this.findNextFillableNode(charNode))
     } else {
       // Backspace is handled directly, but text can be erased in other ways.
       // So in this case we don't move backwards
@@ -94,7 +94,7 @@ class Puzzle {
         if (e.ctrlKey)
           selectCharNode(isWordEnd(node) ? this.findNextNode(node) : this.findNextWordEnd(node))
         else if (e.shiftKey)
-          selectCharNode(this.findNextFreeNode(node))
+          selectCharNode(this.findNextFillableNode(node) || this.charNodes[this.charNodes.length - 1]!)
         else
           selectCharNode(this.findNextNode(node))
         break
@@ -103,7 +103,7 @@ class Puzzle {
         if (e.ctrlKey)
           selectCharNode(isWordStart(node) ? this.findPrevNode(node) : this.findPrevWordStart(node))
         else if (e.shiftKey)
-          selectCharNode(this.findPrevFreeNode(node))
+          selectCharNode(this.findPrevFillableNode(node) || this.charNodes[0]!)
         else
           selectCharNode(this.findPrevNode(node))
         break
@@ -144,14 +144,16 @@ class Puzzle {
     return searchNextNode(node, reverse(this.charNodes), n => getClue(n) !== clue)
   }
 
-  private findNextFreeNode(node: HTMLInputElement): HTMLInputElement | null {
-    const clue = getClue(node)
-    return searchNextNode(node, this.charNodes, n => getClue(n) !== clue && n.value === "")
+  private static isFillable =
+    (clue: string) => (n: HTMLInputElement) =>
+      getClue(n) !== clue && (n.value === "" || n.classList.contains("char-wrong"))
+
+  private findNextFillableNode(node: HTMLInputElement): HTMLInputElement | null {
+    return searchNextNode(node, this.charNodes, Puzzle.isFillable(getClue(node)))
   }
 
-  private findPrevFreeNode(node: HTMLInputElement): HTMLInputElement | null {
-    const clue = getClue(node)
-    return searchNextNode(node, reverse(this.charNodes), n => getClue(n) !== clue && n.value === "")
+  private findPrevFillableNode(node: HTMLInputElement): HTMLInputElement | null {
+    return searchNextNode(node, reverse(this.charNodes), Puzzle.isFillable(getClue(node)))
   }
 
   private markRepeatedGuesses() {
