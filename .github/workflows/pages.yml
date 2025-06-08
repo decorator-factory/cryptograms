@@ -38,7 +38,9 @@ jobs:
       - name: "Install NPM dependencies"
         run: "npm i --include=dev"
       - name: "Build site with Parcel"
-        run: "npm run build"
+        run: |
+          public_url=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.html_url')
+          npm run build -- --public-url $public_url
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
