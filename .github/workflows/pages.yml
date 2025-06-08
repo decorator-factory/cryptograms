@@ -38,6 +38,8 @@ jobs:
       - name: "Install NPM dependencies"
         run: "npm i --include=dev"
       - name: "Build site with Parcel"
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           public_url=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.html_url')
           npm run build -- --public-url $public_url
