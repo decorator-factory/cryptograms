@@ -11,14 +11,14 @@
 
 <body>
   <div class="controls-panel">
-    <nav class="fading-controls-bg">
+    <nav>
       <button class="btn-hamburger">≡</button>
     </nav>
   </div>
-  <div class="details-panel fading-controls-bg">
+  <div class="details-panel">
     <div class="quote-author">
-      <div class="quote-author__name">Tony Hoare</div>
-      <div class="quote-author__year">1980</div>
+      <div class="quote-author__name" id="author-name"></div>
+      <div class="quote-author__year" id="author-year"></div>
     </div>
   </div>
 
@@ -33,10 +33,10 @@
 
     main({
       cryptogramWordsNode: document.getElementById("cryptogram-words"),
-      phrase:
-        `SYQPQ DPQ SCV CDHE VG NVFESPZNSAFX D EVGSCDPQ BQEAXF. `
-        + `VFQ CDH AE SV WDRQ AS EV EAWITQ SYDS SYQPQ DPQ VKOAVZETH FV BQGANAQFNAQE. `
-        + `DFB SYQ VSYQP CDH AE SV WDRQ AS EV NVWITANDSQB SYDS SYQPQ DPQ FV VKOAVZE BQGANAQFNAQE.`,
+      setAuthor: (name, year) => {
+        document.getElementById("author-name").textContent = name
+        document.getElementById("author-year").textContent = year || ""
+      }
     })
   </script>
 </body>

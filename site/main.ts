@@ -1,11 +1,85 @@
 type MainOptions = {
   cryptogramWordsNode: HTMLElement,
-  phrase: string,
+  setAuthor: (name: string, year: number | null) => void,
 }
 
 export function main(opts: MainOptions): void {
   generateStyles()
-  const puzzle = Puzzle.createAt(opts.cryptogramWordsNode, opts.phrase)
+  asyncMain(opts)
+}
+
+type QuoteDocument = {
+  id: string,
+  author: string,
+  text: string,
+  year?: number,
+}
+
+type PuzzleQuote = {
+  id: string,
+  author: string,
+  year: number | null,
+  originalText: string,
+  mapping: { clue: string, real: string }[],
+  encryptedText: string,
+}
+
+async function asyncMain(opts: MainOptions) {
+  const response = await fetch("./quotes.json")
+  if (response.status !== 200)
+    throw new Error()
+
+  const quotes: QuoteDocument[] = await response.json()
+
+  const quoteDoc = quotes[Math.floor(Math.random() * quotes.length)]!
+  const puzzleQuote = generateQuote(quoteDoc)
+
+  opts.setAuthor(puzzleQuote.author, puzzleQuote.year)
+  const puzzle = Puzzle.createAt(opts.cryptogramWordsNode, puzzleQuote.encryptedText, () => { })
+}
+
+function generateQuote(doc: QuoteDocument): PuzzleQuote {
+  const ring = generateRing()
+
+  const guessToClue = new Map<string, string>()
+  for (let i = 0; i < ring.length - 1; i++)
+    guessToClue.set(ring[i]!, ring[i + 1]!)
+  guessToClue.set(ring[ring.length - 1]!, ring[0]!)
+
+  const encryptedText = [...doc.text.toLowerCase()].map(ch => guessToClue.get(ch) || ch).join("")
+
+  return {
+    id: doc.id,
+    author: doc.author,
+    year: doc.year ?? null,
+    originalText: doc.text,
+    mapping: [...guessToClue.entries()].map(([real, clue]) => ({ clue, real })),
+    encryptedText,
+  }
+}
+
+function generateRing(): string[] {
+  // A shuffled alphabet like 'ahzxy...rv', which indicates that a->h, h->z, ..., r->v, v->a.
+  // It can simplify the puzzles if you know this detail, but that's fine for now
+  const ring = shuffle(ALL_LETTERS)
+
+  // ensure that letters don't map to themselves:
+  const repeating = ring.map((ch, i) => [ch, i] as const).filter(([ch, i]) => ALL_LETTERS[i]! === ch)
+
+  if (repeating.length === 0) {
+    return ring
+  } else if (repeating.length === 1) {
+    return generateRing()
+  } else {
+    // rotate the repeating letters among themselves
+    repeating.push(repeating[0]!)
+    for (let j = 0; j < repeating.length - 1; j++) {
+      const [_, i] = repeating[j]!
+      const [ch, __] = repeating[j + 1]!
+      ring[i] = ch
+    }
+  }
+  return ring
 }
 
 
@@ -14,15 +88,24 @@ const ALL_LETTERS: readonly string[] = [..."abcdefghijklmnopqrstuvwxyz"]
 class Puzzle {
   private clueToNodes
   private charNodes
+  private onCompleted
 
-  private constructor(charNodes: HTMLInputElement[]) {
+  private constructor(
+    charNodes: HTMLInputElement[],
+    onCompleted: (guesses: [string, string][]) => void,
+  ) {
     this.charNodes = charNodes
     this.clueToNodes = defaultMap<HTMLInputElement[]>(() => [])
     for (const node of charNodes)
       this.clueToNodes.get(getClue(node)).push(node)
+    this.onCompleted = onCompleted
   }
 
-  static createAt(root: HTMLElement, seed: string): Puzzle {
+  static createAt(
+    root: HTMLElement,
+    seed: string,
+    onCompleted: (guesses: [string, string][]) => void,
+  ): Puzzle {
     const charNodes: HTMLInputElement[] = []
 
     for (const word of seed.toLowerCase().split(" ")) {
@@ -54,7 +137,7 @@ class Puzzle {
       root.appendChild(wordNode)
     }
 
-    const puzzle = new Puzzle(charNodes)
+    const puzzle = new Puzzle(charNodes, onCompleted)
     return puzzle
   }
 
@@ -68,12 +151,20 @@ class Puzzle {
         node.classList.add("char-filled")
       }
       selectCharNode(this.findNextFillableNode(charNode))
+      this.checkCompletion()
     } else {
       // Backspace is handled directly, but text can be erased in other ways.
       // So in this case we don't move backwards
       this.eraseClue(clue)
     }
     this.markRepeatedGuesses()
+  }
+
+  private checkCompletion() {
+    if (this.charNodes.every(node => node.value !== "")) {
+      const guesses: [string, string][] = this.charNodes.map(node => [getClue(node), node.value] as const)
+      this.onCompleted(guesses)
+    }
   }
 
   private onKeyPressed(node: HTMLInputElement, e: KeyboardEvent) {
@@ -277,6 +368,15 @@ function generateStyles() {
 }
 
 // Utility functions
+
+function shuffle<T>(items: Iterable<T>): T[] {
+  const rv = [...items]
+  for (let i = rv.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [rv[i], rv[j]] = [rv[j]!, rv[i]!];
+  }
+  return rv
+}
 
 function* reverse<T>(items: readonly T[]) {
   for (let i = items.length - 1; i >= 0; i--)
