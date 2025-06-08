@@ -35,11 +35,14 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
-      - run: "npm i --include=dev && tsc --build --verbose"
+      - name: "Install NPM dependencies"
+        run: "npm i --include=dev"
+      - name: "Build site with Parcel"
+        run: "bpm parcel build"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "site"
+          path: "dist"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

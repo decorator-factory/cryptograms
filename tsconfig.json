@@ -3,7 +3,6 @@
         "strict": true,
         "noUncheckedIndexedAccess": true,
         "noFallthroughCasesInSwitch": true,
-        "outDir": "site/js",
         "target": "es2020",
     },
     "include": ["site/**/*.ts"],
