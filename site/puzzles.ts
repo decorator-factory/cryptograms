@@ -1,25 +1,30 @@
 const ALPHABET: readonly string[] = [..."abcdefghijklmnopqrstuvwxyz"]
 
+export type PuzzleEvents = {
+  onClueFilled: (event: {clue: string, guess: string}) => void,
+  onCompleted: (guesses: [string, string][]) => void,
+}
+
 export class Puzzle {
   private clueToNodes
   private charNodes
-  private onCompleted
+  private eventHandlers
 
   private constructor(
     charNodes: HTMLInputElement[],
-    onCompleted: (guesses: [string, string][]) => void,
+    eventHandlers: PuzzleEvents,
   ) {
     this.charNodes = charNodes
     this.clueToNodes = defaultMap<HTMLInputElement[]>(() => [])
     for (const node of charNodes)
       this.clueToNodes.get(getClue(node)).push(node)
-    this.onCompleted = onCompleted
+    this.eventHandlers = eventHandlers
   }
 
   public static createAt(
     root: HTMLElement,
     seed: string,
-    onCompleted: (guesses: [string, string][]) => void,
+    eventHandlers: PuzzleEvents,
   ): Puzzle {
     const charNodes: HTMLInputElement[] = []
 
@@ -52,7 +57,7 @@ export class Puzzle {
       root.appendChild(wordNode)
     }
 
-    const puzzle = new Puzzle(charNodes, onCompleted)
+    const puzzle = new Puzzle(charNodes, eventHandlers)
     return puzzle
   }
 
@@ -66,6 +71,7 @@ export class Puzzle {
         node.classList.add("char-filled")
       }
       selectCharNode(this.findNextFillableNode(charNode))
+      this.eventHandlers.onClueFilled({ clue, guess: newGuess })
       this.checkCompletion()
     } else {
       // Backspace is handled directly, but text can be erased in other ways.
@@ -78,7 +84,7 @@ export class Puzzle {
   private checkCompletion() {
     if (this.charNodes.every(node => node.value !== "")) {
       const guesses: [string, string][] = this.charNodes.map(node => [getClue(node), node.value] as const)
-      this.onCompleted(guesses)
+      this.eventHandlers.onCompleted(guesses)
     }
   }
 
@@ -125,6 +131,7 @@ export class Puzzle {
   }
 
   private eraseClue(clue: string) {
+    this.eventHandlers.onClueFilled({ clue, guess: "" })
     for (const node of this.clueToNodes.get(clue)) {
       node.value = ""
       node.classList.remove("char-filled")

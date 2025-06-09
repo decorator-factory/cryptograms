@@ -1,6 +1,4 @@
 :root {
-  --large-button-size: 96px;
-
   --font-family-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
   --font-family-sans: Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif;
 }
@@ -9,7 +7,7 @@ body {
   font-family: var(--font-family-sans);
 
   display: grid;
-  grid-template-columns: 1fr minmax(auto, 45rem) minmax(10rem, 1fr);
+  grid-template-columns: 1fr minmax(auto, 40rem) minmax(10rem, 1fr);
   grid-template-rows: 1fr;
   grid-template-areas: "controls puzzle details";
 
@@ -18,7 +16,6 @@ body {
 
 .controls-panel {
   grid-area: controls;
-  background: white;
 }
 
 main {
@@ -27,70 +24,76 @@ main {
 
 .details-panel {
   grid-area: details;
-  background: white;
 }
 
 .controls-panel,
+.controls-panel>details,
 .details-panel,
-nav,
 .quote-author {
-  z-index: 100;
-  position: sticky;
-  top: 0px;
+  background: white;
 }
 
-.btn-hamburger {
-  color: #aaa;
-  font-size: var(--large-button-size);
-  font-weight: 900;
-  background: none;
-  border: none;
+@media (width >=1000px) {
+
+  .controls-panel,
+  .controls-panel>details,
+  .details-panel,
+  .quote-author {
+    z-index: 100;
+    position: sticky;
+    top: 0px;
+  }
 }
+
 
 .quote-author__name {
   font-weight: 600;
 }
 
-@media (width < 768px) {
-  :root {
-    --large-button-size: 48px;
-  }
-
+@media (width < 1000px) {
   body {
-    grid-template-columns: 3rem auto;
-    grid-template-rows: min-content auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
     grid-template-areas:
-      "controls details"
-      "puzzle puzzle";
-  }
-
-  .details-panel {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-content: end;
-    flex-wrap: wrap;
-  }
-
-  .quote-author {
-    display: flex;
-    gap: 1rem;
-    padding-right: 3rem;
+      "controls"
+      "details"
+      "puzzle";
+    align-items: start;
   }
 }
 
-@media (width >=768px) {
+.controls-panel>details>summary {
+  padding: 0.25rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.details-panel {
+  display: flex;
+  flex-direction: column;
+  align-content: end;
+  flex-wrap: wrap;
+}
+
+.quote-author {
+  display: flex;
+  gap: 1rem;
+  padding-block: 0.5rem;
+  padding-inline: 1rem;
+  line-height: 1.1;
+}
+
+@media (width >=1000px) {
   .controls-panel {
-    position: relative;
-    justify-self: right;
-    margin-top: 6rem;
-    top: 2rem;
+    justify-self: center;
 
-    button {
-      margin-left: auto;
+    >details {
+      >summary {
+        font-size: 2rem;
+        text-align: center;
+      }
 
-      /* Scale from 120px to 0px as the viewport width shrinks from 1200px to 900px */
-      margin-right: calc(max(0px, min((100vw - 800px) * (120 / (1200 - 800)), 120px)));
+      margin-top: 6rem;
     }
   }
 
@@ -118,8 +121,72 @@ h1 {
   text-align: center;
   color: #ccc;
 
-  @media (width <768px) {
+  @media (width <1000px) {
     display: none;
+  }
+}
+
+.puzzle-choice-list {
+  padding-left: 0.5rem;
+
+  @media (width <1000px) {
+    display: flex;
+    gap: 1px;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  >li {
+    list-style: none;
+
+    a {
+      position: relative;
+      cursor: pointer;
+      display: block;
+      padding: 0 0.25rem;
+
+      border-bottom: 2px solid;
+
+      @media (width <1000px) {
+        border: 1px solid;
+      }
+
+      &:target {
+        border-left-style: solid;
+        border-left-width: 4px;
+      }
+
+      border-color: #bdc0d8;
+      color: #202f8b;
+      padding-top: 0.25rem;
+      text-decoration: none;
+
+      &:hover {
+        border-color: #619cf3;
+        color: #2d5a79;
+        background: #f5f8fc;
+      }
+
+      &.puzzle-link-solved {
+        &::after {
+          display: block;
+          right: 0;
+          top: 0;
+          float: right;
+          content: "✅";
+          position: absolute;
+          opacity: 0.33;
+        }
+
+        border-color: #39aa1d;
+        color: #0c1f07;
+        background: #e9f08c;
+
+        &:hover {
+          background: #b1f336;
+        }
+      }
+    }
   }
 }
 

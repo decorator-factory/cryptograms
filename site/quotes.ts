@@ -2,6 +2,7 @@ export type QuoteSpec = {
   id: string,
   author: string,
   text: string,
+  shortAuthor?: string,
   year?: number,
   hints?: string[],  // TODO: handle hints
 }
@@ -16,12 +17,14 @@ export const allQuotes: readonly Readonly<QuoteSpec>[] = [
   {
     id: "stroustrup-1",
     author: "Bjarne Stroustrup",
+    shortAuthor: "Bjarne",
     text: "\"How to test?\" is a question that cannot be answered in general. \"When to test?\" however, does have a general answer: as early and as often as possible",
     year: 2013,
   },
   {
     id: "stroustrup-2",
     author: "Bjarne Stroustrup",
+    shortAuthor: "Bjarne",
     text: "There are only two kinds of languages: the ones people complain about and the ones nobody uses",
   },
   {
@@ -75,6 +78,7 @@ export const allQuotes: readonly Readonly<QuoteSpec>[] = [
   {
     id: "sicp-1",
     author: "Structure and Interpretation of Computer Programs",
+    shortAuthor: "SICP",
     text: "Programs must be written for people to read, and only incidentally for machines to execute",
     year: 1984,
   },
@@ -127,6 +131,7 @@ export const allQuotes: readonly Readonly<QuoteSpec>[] = [
     author: "Sam Redwine",
     text: "Software and cathedrals are much the same — first we build them, then we pray",
     year: 1988,
+
   },
   {
     id: "dijkstra-1",
@@ -147,7 +152,7 @@ export const allQuotes: readonly Readonly<QuoteSpec>[] = [
     year: 1975,
   },
   {
-    id: "hickey-2",
+    id: "hickey-1",
     author: "Rich Hickey",
     text: "We just fire the starting pistol every hundred yards and call it a new sprint",
     year: 2011,
@@ -170,5 +175,5 @@ export const allQuotes: readonly Readonly<QuoteSpec>[] = [
     author: "Brian Kernighan",
     text: "Everyone knows that debugging is twice as hard as writing a program in the first place. So if you're as clever as you can be when you write it, how will you ever debug it?",
     year: 1978,
-  }
+  },
 ]

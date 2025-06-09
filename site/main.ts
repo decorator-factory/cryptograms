@@ -3,31 +3,72 @@ import { allQuotes, QuoteSpec } from "./quotes"
 
 type MainOptions = {
   cryptogramWordsNode: HTMLElement,
+  puzzleLinksNode: HTMLElement,
   setAuthor: (name: string, year: number | null) => void,
 }
 
 export function main(opts: MainOptions): void {
   puzzles.generateStyles()
-  asyncMain(opts)
+
+  const quotes = allQuotes.map(generateQuote)
+  const idToQuote = new Map(quotes.map(q => [q.id, q]))
+
+  function selectPuzzle(id: string) {
+    const quote = idToQuote.get(id)
+    if (!quote) return
+    opts.setAuthor(quote.fullAuthor, quote.year)
+    opts.cryptogramWordsNode.textContent = ""
+    initQuote(opts.cryptogramWordsNode, quote)
+  }
+
+  for (const quote of quotes) {
+    const li = document.createElement("li")
+    const a = document.createElement("a")
+
+    a.href = `#${quote.id}`
+    a.id = quote.id
+    a.textContent = quote.year ? `${quote.shortAuthor}, ${quote.year}` : quote.shortAuthor
+
+    a.addEventListener("click", () => selectPuzzle(quote.id))
+
+    if (quote.id === "sicp-1" || quote.id === "zimmermann-1") {
+      a.classList.add("puzzle-link-solved")
+    }
+
+    li.appendChild(a)
+    opts.puzzleLinksNode.appendChild(li)
+  }
+
+  const hash = document.location.hash.replace("#", "")
+  if (hash === "") {
+    document.location.hash = quotes[0]!.id
+    selectPuzzle(quotes[0]!.id)
+  } else {
+    selectPuzzle(hash)
+  }
 }
 
 const ALPHABET: readonly string[] = [..."abcdefghijklmnopqrstuvwxyz"]
 
 type PuzzleQuote = {
   id: string,
-  author: string,
+  fullAuthor: string,
+  shortAuthor: string,
   year: number | null,
   originalText: string,
   mapping: { clue: string, real: string }[],
   encryptedText: string,
 }
 
-async function asyncMain(opts: MainOptions) {
-  const quoteDoc = allQuotes[Math.floor(Math.random() * allQuotes.length)]!
-  const puzzleQuote = generateQuote(quoteDoc)
-
-  opts.setAuthor(puzzleQuote.author, puzzleQuote.year)
-  const puzzle = puzzles.Puzzle.createAt(opts.cryptogramWordsNode, puzzleQuote.encryptedText, () => { })
+function initQuote(rootNode: HTMLElement, quote: PuzzleQuote) {
+  const puzzle = puzzles.Puzzle.createAt(
+    rootNode,
+    quote.encryptedText,
+    {
+      onClueFilled(event) { },
+      onCompleted(guesses) { },
+    }
+  )
 }
 
 function generateQuote(doc: QuoteSpec): PuzzleQuote {
@@ -42,7 +83,8 @@ function generateQuote(doc: QuoteSpec): PuzzleQuote {
 
   return {
     id: doc.id,
-    author: doc.author,
+    fullAuthor: doc.author,
+    shortAuthor: doc.shortAuthor || doc.author,
     year: doc.year ?? null,
     originalText: doc.text,
     mapping: [...guessToClue.entries()].map(([real, clue]) => ({ clue, real })),
