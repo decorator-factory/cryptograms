@@ -265,7 +265,7 @@ function isWordEnd(node: HTMLInputElement): boolean {
 }
 
 function preventSelection(this: HTMLInputElement) {
-  if (this.selectionStart !== 1 || this.selectionEnd !== 1)
+  if (this.selectionStart !== 0 || this.selectionEnd !== 0)
     this.setSelectionRange(0, 0)
 }
 
