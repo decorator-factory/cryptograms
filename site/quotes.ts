@@ -22,7 +22,7 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
     author: "Konrad Zuse",
     text: "The danger of computers becoming like humans is not as great as the danger of humans becoming like computers",
     year: 2005,
-    hints: ["g"],
+    hints: ["g", "k"],
   },
   {
     id: "stroustrup-1",
@@ -30,12 +30,14 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
     shortAuthor: "Bjarne",
     text: "\"How to test?\" is a question that cannot be answered in general. \"When to test?\" however, does have a general answer: as early and as often as possible",
     year: 2013,
+    hints: ["q"],
   },
   {
     id: "stroustrup-2",
     author: "Bjarne Stroustrup",
     shortAuthor: "Bjarne",
     text: "There are only two kinds of languages: the ones people complain about and the ones nobody uses",
+    hints: ["k"],
   },
   {
     id: "kay-1",
@@ -170,6 +172,7 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
     author: "Fred Brooks",
     text: "The bearing of a child takes nine months, no matter how many women are assigned",
     year: 1975,
+    hints: ["w"],
   },
   {
     id: "hickey-1",
