@@ -88,12 +88,13 @@ main {
     justify-self: center;
 
     >details {
+      margin-top: 6rem;
+
       >summary {
         font-size: 2rem;
         text-align: center;
       }
 
-      margin-top: 6rem;
     }
   }
 
@@ -147,6 +148,11 @@ h1 {
 
       border-bottom: 2px solid;
 
+      border-color: #bdc0d8;
+      color: #202f8b;
+      padding-top: 0.25rem;
+      text-decoration: none;
+
       @media (width <1000px) {
         border: 1px solid;
       }
@@ -156,10 +162,6 @@ h1 {
         border-left-width: 4px;
       }
 
-      border-color: #bdc0d8;
-      color: #202f8b;
-      padding-top: 0.25rem;
-      text-decoration: none;
 
       &:hover {
         border-color: #619cf3;
@@ -168,6 +170,10 @@ h1 {
       }
 
       &.puzzle-link-solved {
+        border-color: #39aa1d;
+        color: #0c1f07;
+        background: #e9f08c;
+
         &::after {
           display: block;
           right: 0;
@@ -177,10 +183,6 @@ h1 {
           position: absolute;
           opacity: 0.33;
         }
-
-        border-color: #39aa1d;
-        color: #0c1f07;
-        background: #e9f08c;
 
         &:hover {
           background: #b1f336;
@@ -196,14 +198,14 @@ h1 {
   font-family: var(--font-family-mono);
   font-size: 2rem;
 
-  @media (width < 640px) {
-    font-size: 1.5rem;
-  }
-
   display: flex;
   flex-wrap: wrap;
 
   gap: 0.66ch calc(1ch + 4px);
+
+  @media (width < 640px) {
+    font-size: 1.5rem;
+  }
 }
 
 .word {
@@ -268,12 +270,11 @@ h1 {
 
 .char.char-wrong {
   background: rgb(185, 34, 29);
+  z-index: 3;
 
   &:focus {
     outline: 2px solid rgb(59, 0, 0);
   }
-
-  z-index: 3;
 }
 
 .char.char:focus {
