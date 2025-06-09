@@ -25,9 +25,11 @@ export function main(opts: MainOptions): void {
   }
 
   function selectPuzzle(quoteId: string) {
-    showStatus("")
     const quote = quotes.find(q => q.id === quoteId)
     if (!quote) return
+
+    showStatus("")
+
     opts.setAuthor(quote.fullAuthor, quote.year)
     opts.cryptogramWordsNode.textContent = ""
 
@@ -58,6 +60,13 @@ export function main(opts: MainOptions): void {
   }
 
   initQuoteList(opts.puzzleLinksNode, stats.solvedCryptograms, quotes, selectPuzzle)
+
+  window.addEventListener("popstate", () => {
+    // Handle "go back" and "go forward" changing the fragment
+    const selectedQuoteId = unLinkFragment(document.location.hash)
+    if (selectedQuoteId)
+      selectPuzzle(selectedQuoteId)
+  })
 }
 
 function isSolvedCorrectly(
