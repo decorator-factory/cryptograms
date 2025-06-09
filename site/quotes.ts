@@ -13,6 +13,7 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
   {
     id: "hello-world",
     author: "Anonymous",
+    shortAuthor: "Anon",
     text: "Hello, world!",
     hints: ["l"],
   },
@@ -194,5 +195,13 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
     author: "Brian Kernighan",
     text: "Everyone knows that debugging is twice as hard as writing a program in the first place. So if you're as clever as you can be when you write it, how will you ever debug it?",
     year: 1978,
+  },
+  {
+    id: "df-css-1",
+    author: "Anonymous",
+    shortAuthor: "Anon",
+    text: "If you unscrambled all these quotes, please help me unscramble the CSS I concocted for this page",
+    year: 2025,
+    hints: ["i", "c", "s"],
   },
 ]

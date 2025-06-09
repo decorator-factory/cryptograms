@@ -33,7 +33,7 @@ main {
 }
 
 .controls-panel,
-.controls-panel>details,
+.controls-panel>.select-quote,
 .details-panel,
 .quote-author {
   background: white;
@@ -42,7 +42,7 @@ main {
 @media (width >=1000px) {
 
   .controls-panel,
-  .controls-panel>details,
+  .controls-panel>.select-quote,
   .details-panel,
   .quote-author {
     z-index: 100;
@@ -72,6 +72,11 @@ main {
   padding: 0.25rem;
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+.controls-panel__github-link {
+  display: inline-block;
+  margin-bottom: 1rem;
 }
 
 .details-panel {
@@ -150,12 +155,14 @@ h1 {
 
 .puzzle-choice-list {
   padding-left: 0.5rem;
+  padding-bottom: 2rem;
 
   @media (width <1000px) {
     display: flex;
     gap: 1px;
     flex-direction: row;
     flex-wrap: wrap;
+    padding-bottom: 0;
   }
 
   >li {
