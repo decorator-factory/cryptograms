@@ -6,7 +6,7 @@ export type QuoteSpec = {
   shortAuthor?: string,  // for authors with long names, so that it fits into a list item
 
   year?: number,
-  hints?: string[],  // TODO: apply hints
+  hints?: string[],  // must be lower case
 }
 
 export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
@@ -21,6 +21,7 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
     author: "Konrad Zuse",
     text: "The danger of computers becoming like humans is not as great as the danger of humans becoming like computers",
     year: 2005,
+    hints: ["g"],
   },
   {
     id: "stroustrup-1",
@@ -40,18 +41,21 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
     author: "Alan Kay",
     text: "I made up the term \"object-oriented\", and I can tell you I did not have C++ in mind",
     year: 1997,
+    hints: ["c"],
   },
   {
     id: "dijkstra-2",
     author: "Edsger Dijkstra",
     text: "We must be very careful when we give advice to younger people: sometimes they follow it",
     year: 1972,
+    hints: ["f"],
   },
   {
     id: "dijkstra-3",
     author: "Edsger Dijkstra",
     text: "The purpose of abstracting is not to be vague, but to create a new semantic level in which one can be absolutely precise",
     year: 1972,
+    hints: ["v"],
   },
   {
     id: "kay-2",
@@ -64,24 +68,28 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
     author: "Linus Torvalds",
     text: "I have a firm belief that most firmware developers are not actually humans, but are instead caged rodents fed a solid diet of crack cocaine",
     year: 2025,
+    hints: ["m", "w"],
   },
   {
     id: "booch-1",
     author: "Grady Booch",
     text: "In a quality object-oriented software system, you will find many classes that speak the language of the domain expert",
     year: 1996,
+    hints: ["x"],
   },
   {
     id: "postel-1",
     author: "Jon Postel",
     text: "In general, an implementation must be conservative in its sending behavior, and liberal in its receiving behavior",
     year: 1981,
+    hints: ["l"],
   },
   {
     id: "codd-1",
     author: "Edgar F. Codd",
     text: "At the time, Nixon was normalizing relations with China. I figured that if he could normalize relations, then so could I",
     year: 1981,
+    hints: ["f"],
   },
   {
     id: "sicp-1",
@@ -89,6 +97,7 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
     shortAuthor: "SICP",
     text: "Programs must be written for people to read, and only incidentally for machines to execute",
     year: 1984,
+    hints: ["y"],
   },
   {
     id: "torvalds-2",
@@ -121,31 +130,33 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
     author: "Andrew Tanenbaum",
     text: "Never underestimate the bandwidth of a station wagon full of tapes hurtling down the highway",
     year: 1996,
+    hints: ["h", "p"],
   },
   {
     id: "minsky-2",
     author: "Marvin Minsky",
     text: "Computer languages of the future will be more concerned with goals and less with procedures specified by the programmer",
     year: 1969,
+    hints: ["f"],
   },
   {
     id: "zen-of-python-1",
     author: "The Zen of Python",
     text: "In the face of ambiguity, refuse the temptation to guess",
-    hints: ["f"],
+    hints: ["f", "b"],
   },
   {
     id: "redwine-1",
     author: "Sam Redwine",
     text: "Software and cathedrals are much the same — first we build them, then we pray",
     year: 1988,
-
   },
   {
     id: "dijkstra-1",
     author: "Edsger Dijkstra",
     text: "Program testing can be used to show the presence of bugs, but never to show their absence",
     year: 1970,
+    hints: ["g"],
   },
   {
     id: "torvalds-3",
@@ -164,7 +175,7 @@ export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
     author: "Rich Hickey",
     text: "We just fire the starting pistol every hundred yards and call it a new sprint",
     year: 2011,
-    hints: ["y"],
+    hints: ["w"],
   },
   {
     id: "hoare-1",

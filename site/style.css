@@ -263,7 +263,7 @@ h1 {
     background 0.2s,
     color 0.2s;
 
-  &:where(:not(.char-punctuation)) {
+  &:where(:not(.char-hint)) {
     background: #f0f0f0;
   }
 

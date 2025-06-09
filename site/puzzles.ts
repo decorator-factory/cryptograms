@@ -26,6 +26,7 @@ export class Puzzle {
   public static createAt(
     root: HTMLElement,
     seed: string,
+    hintClues: Map<string, string>,
     eventHandlers: PuzzleEvents,
   ): Puzzle {
     const charNodes: HTMLInputElement[] = []
@@ -35,7 +36,13 @@ export class Puzzle {
       wordNode.classList.add("word")
 
       for (const clue of word) {
-        if (ALPHABET.includes(clue)) {
+        if (hintClues.has(clue)) {
+          const charNode = document.createElement("div")
+          charNode.classList.add("char", "char-hint")
+          charNode.innerText = hintClues.get(clue)!
+          wordNode.appendChild(charNode)
+
+        } else if (ALPHABET.includes(clue)) {
           const charNode = document.createElement("input")
           charNode.classList.add("char")
           charNode.placeholder = clue
@@ -48,9 +55,10 @@ export class Puzzle {
 
           setClue(charNode, clue)
           charNodes.push(charNode)
+
         } else {
           const charNode = document.createElement("div")
-          charNode.classList.add("char", "char-punctuation")
+          charNode.classList.add("char", "char-hint")
           charNode.innerText = clue
           wordNode.appendChild(charNode)
         }
@@ -248,12 +256,12 @@ function setClue(node: HTMLInputElement, clue: string) {
 
 function isWordStart(node: HTMLInputElement): boolean {
   const prev = node.previousSibling as HTMLElement | null
-  return !prev || prev.classList.contains("char-punctuation")
+  return !prev || prev.classList.contains("char-hint")
 }
 
 function isWordEnd(node: HTMLInputElement): boolean {
   const next = node.nextSibling as HTMLElement | null
-  return !next || next.classList.contains("char-punctuation")
+  return !next || next.classList.contains("char-hint")
 }
 
 function preventSelection(this: HTMLInputElement) {

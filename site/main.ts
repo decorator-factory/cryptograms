@@ -34,6 +34,7 @@ export function main(opts: MainOptions): void {
     const puzzle = puzzles.Puzzle.createAt(
       opts.cryptogramWordsNode,
       quote.encryptedText,
+      quote.hintClues,
       {
         onClueFilled(event) {
           if (event.guess) {
@@ -127,6 +128,7 @@ type PuzzleQuote = {
   year: number | null,
   originalText: string,
 
+  hintClues: Map<string, string>,  // clue->guess
   clueToOriginal: Map<string, string>,
   encryptedText: string,
 }
@@ -134,12 +136,14 @@ type PuzzleQuote = {
 function scrambleQuote(doc: QuoteSpec): PuzzleQuote {
   const ring = generateRing()
 
-  const guessToClue = new Map<string, string>()
+  const origToClue = new Map<string, string>()
   for (let i = 0; i < ring.length - 1; i++)
-    guessToClue.set(ring[i]!, ring[i + 1]!)
-  guessToClue.set(ring[ring.length - 1]!, ring[0]!)
+    origToClue.set(ring[i]!, ring[i + 1]!)
+  origToClue.set(ring[ring.length - 1]!, ring[0]!)
 
-  const encryptedText = [...doc.text.toLowerCase()].map(ch => guessToClue.get(ch) || ch).join("")
+  const hintClues = new Map((doc.hints || []).map(hint => [origToClue.get(hint)!, hint]))
+
+  const encryptedText = [...doc.text.toLowerCase()].map(ch => origToClue.get(ch) || ch).join("")
 
   return {
     id: doc.id,
@@ -147,8 +151,9 @@ function scrambleQuote(doc: QuoteSpec): PuzzleQuote {
     shortAuthor: doc.shortAuthor || doc.author,
     year: doc.year ?? null,
     originalText: doc.text,
-    clueToOriginal: new Map([...guessToClue.entries()].map(([real, clue]) => [clue, real])),
+    clueToOriginal: new Map([...origToClue.entries()].map(([real, clue]) => [clue, real])),
     encryptedText,
+    hintClues,
   }
 }
 
