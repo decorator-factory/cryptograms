@@ -2,12 +2,20 @@ export type QuoteSpec = {
   id: string,
   author: string,
   text: string,
-  shortAuthor?: string,
+
+  shortAuthor?: string,  // for authors with long names, so that it fits into a list item
+
   year?: number,
-  hints?: string[],  // TODO: handle hints
+  hints?: string[],  // TODO: apply hints
 }
 
-export const allQuotes: readonly Readonly<QuoteSpec>[] = [
+export const quoteSpecs: readonly Readonly<QuoteSpec>[] = [
+  {
+    id: "hello-world",
+    author: "Anonymous",
+    text: "Hello, world!",
+    hints: ["l"],
+  },
   {
     id: "zuse-1",
     author: "Konrad Zuse",

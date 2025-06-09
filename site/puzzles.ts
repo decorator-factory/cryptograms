@@ -1,8 +1,10 @@
+import { defaultMap, reverse } from "./utils"
+
 const ALPHABET: readonly string[] = [..."abcdefghijklmnopqrstuvwxyz"]
 
 export type PuzzleEvents = {
-  onClueFilled: (event: {clue: string, guess: string}) => void,
-  onCompleted: (guesses: [string, string][]) => void,
+  onClueFilled: (event: { clue: string, guess: string }) => void,
+  onCompleted: (guesses: { clue: string, guess: string }[]) => void,
 }
 
 export class Puzzle {
@@ -61,6 +63,24 @@ export class Puzzle {
     return puzzle
   }
 
+  public applyProgress(cluesToGuesses: Map<string, string>) {
+    for (const [clue, guess] of cluesToGuesses.entries()) {
+      if (guess.length !== 1)
+        continue
+
+      for (const node of this.clueToNodes.get(clue)) {
+        node.classList.add("char-filled")
+        node.value = guess
+      }
+    }
+
+    this.markRepeatedGuesses()
+  }
+
+  public isCompleted(): boolean {
+    return this.charNodes.every(node => node.value !== "")
+  }
+
   private onNewInputValue(charNode: HTMLInputElement) {
     const clue = getClue(charNode)
     const newGuess = charNode.value.trim().toLowerCase()[0]
@@ -82,8 +102,8 @@ export class Puzzle {
   }
 
   private checkCompletion() {
-    if (this.charNodes.every(node => node.value !== "")) {
-      const guesses: [string, string][] = this.charNodes.map(node => [getClue(node), node.value] as const)
+    if (this.isCompleted()) {
+      const guesses = this.charNodes.map(node => ({ clue: getClue(node), guess: node.value }))
       this.eventHandlers.onCompleted(guesses)
     }
   }
@@ -289,27 +309,4 @@ export function generateStyles() {
   document.head.appendChild(styleNode)
 }
 
-// Utility functions
 
-function* reverse<T>(items: readonly T[]) {
-  for (let i = items.length - 1; i >= 0; i--)
-    yield items[i] as T
-}
-
-function defaultMap<V>(init: () => V) {
-  const map = new Map<string, V>()
-  return {
-    get: (key: string): V => {
-      if (map.has(key)) {
-        return map.get(key) as V
-      } else {
-        const v = init()
-        map.set(key, v)
-        return v
-      }
-    },
-    set: (key: string, value: V) => {
-      map.set(key, value)
-    },
-  }
-}

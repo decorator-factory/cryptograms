@@ -14,6 +14,12 @@ body {
   align-items: stretch;
 }
 
+kbd {
+  font-weight: 500;
+  color: #666;
+  font-family: var(--font-family-mono);
+}
+
 .controls-panel {
   grid-area: controls;
 }
@@ -83,13 +89,28 @@ main {
   line-height: 1.1;
 }
 
+.how-to-play__body {
+  max-width: 30rem;
+  padding-inline: 2rem;
+
+  @media (width <1500px) {
+    padding-inline: 0.5rem;
+  }
+
+  p {
+    margin-bottom: 1lh;
+  }
+}
+
 @media (width >=1000px) {
+  .select-quote {
+    margin-top: 6rem;
+  }
+
   .controls-panel {
     justify-self: center;
 
     >details {
-      margin-top: 6rem;
-
       >summary {
         font-size: 2rem;
         text-align: center;
@@ -279,4 +300,18 @@ h1 {
 
 .char.char:focus {
   z-index: 4;
+}
+
+.status {
+  display: none;
+
+  padding: 0.5rem;
+  margin: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  font-size: 1.5rem;
+
+  &.status__show {
+    display: block;
+  }
 }

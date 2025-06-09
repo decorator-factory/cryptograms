@@ -1,5 +1,7 @@
 import * as puzzles from "./puzzles"
-import { allQuotes, QuoteSpec } from "./quotes"
+import * as storage from "./storage"
+import { quoteSpecs, QuoteSpec } from "./quotes"
+import { defaultMap } from "./utils"
 
 type MainOptions = {
   cryptogramWordsNode: HTMLElement,
@@ -10,42 +12,110 @@ type MainOptions = {
 export function main(opts: MainOptions): void {
   puzzles.generateStyles()
 
-  const quotes = allQuotes.map(generateQuote)
-  const idToQuote = new Map(quotes.map(q => [q.id, q]))
+  const stats = storage.getStats()
+  const quotes = quoteSpecs.map(scrambleQuote)
+  const progress = defaultMap<Map<string, string>>(() => new Map)
 
-  function selectPuzzle(id: string) {
-    const quote = idToQuote.get(id)
+  function markAsSolved(quoteId: string) {
+    if (!stats.solvedCryptograms.includes(quoteId)) {
+      stats.solvedCryptograms.push(quoteId)
+      storage.writeStats(stats)
+    }
+    document.getElementById(linkFragment(quoteId))?.classList.add("puzzle-link-solved")
+  }
+
+  function selectPuzzle(quoteId: string) {
+    showStatus("")
+    const quote = quotes.find(q => q.id === quoteId)
     if (!quote) return
     opts.setAuthor(quote.fullAuthor, quote.year)
     opts.cryptogramWordsNode.textContent = ""
-    initQuote(opts.cryptogramWordsNode, quote)
+
+    const puzzle = puzzles.Puzzle.createAt(
+      opts.cryptogramWordsNode,
+      quote.encryptedText,
+      {
+        onClueFilled(event) {
+          if (event.guess) {
+            progress.get(quoteId).set(event.clue, event.guess)
+          } else {
+            progress.get(quoteId).delete(event.clue)
+            showStatus("")
+          }
+        },
+        onCompleted(solution) {
+          if (isSolvedCorrectly(quote, solution)) {
+            markAsSolved(quote.id)
+            showStatus("You solved the puzzle! 🎸")
+          } else {
+            showStatus("That's not quite the right quote 🤔")
+          }
+        },
+      }
+    )
+    puzzle.applyProgress(progress.get(quoteId))
   }
 
+  initQuoteList(opts.puzzleLinksNode, stats.solvedCryptograms, quotes, selectPuzzle)
+}
+
+function isSolvedCorrectly(
+  quote: PuzzleQuote,
+  solution: Iterable<Readonly<{ guess: string, clue: string }>>,
+): boolean {
+  for (const { guess, clue } of solution)
+    if (quote.clueToOriginal.get(clue) !== guess)
+      return false
+  return true
+}
+
+function showStatus(message: string) {
+  const statusBox = document.querySelector(".status")!
+  statusBox.textContent = message
+  if (message)
+    statusBox.classList.add("status__show")
+  else
+    statusBox.classList.remove("status__show")
+}
+
+function initQuoteList(
+  listRoot: HTMLElement,
+  solvedIds: readonly string[],
+  quotes: readonly PuzzleQuote[],
+  selectPuzzle: (id: string) => void,
+) {
   for (const quote of quotes) {
     const li = document.createElement("li")
     const a = document.createElement("a")
 
-    a.href = `#${quote.id}`
-    a.id = quote.id
+    a.id = linkFragment(quote.id)
+    a.href = "#" + a.id
     a.textContent = quote.year ? `${quote.shortAuthor}, ${quote.year}` : quote.shortAuthor
 
     a.addEventListener("click", () => selectPuzzle(quote.id))
-
-    if (quote.id === "sicp-1" || quote.id === "zimmermann-1") {
+    if (solvedIds.includes(quote.id))
       a.classList.add("puzzle-link-solved")
-    }
 
     li.appendChild(a)
-    opts.puzzleLinksNode.appendChild(li)
+    listRoot.appendChild(li)
   }
 
-  const hash = document.location.hash.replace("#", "")
-  if (hash === "") {
-    document.location.hash = quotes[0]!.id
-    selectPuzzle(quotes[0]!.id)
+  const selectedQuoteId = unLinkFragment(document.location.hash)
+  if (selectedQuoteId) {
+    selectPuzzle(selectedQuoteId)
   } else {
-    selectPuzzle(hash)
+    document.location.hash = linkFragment(quotes[0]!.id)
+    selectPuzzle(quotes[0]!.id)
   }
+}
+
+function linkFragment(quoteId: string): string {
+  return `quote_${quoteId}`
+}
+
+function unLinkFragment(fragment: string): string | null {
+  const match = /^#?quote_(.*)$/.exec(fragment)
+  return match ? match[1]! : null
 }
 
 const ALPHABET: readonly string[] = [..."abcdefghijklmnopqrstuvwxyz"]
@@ -56,22 +126,12 @@ type PuzzleQuote = {
   shortAuthor: string,
   year: number | null,
   originalText: string,
-  mapping: { clue: string, real: string }[],
+
+  clueToOriginal: Map<string, string>,
   encryptedText: string,
 }
 
-function initQuote(rootNode: HTMLElement, quote: PuzzleQuote) {
-  const puzzle = puzzles.Puzzle.createAt(
-    rootNode,
-    quote.encryptedText,
-    {
-      onClueFilled(event) { },
-      onCompleted(guesses) { },
-    }
-  )
-}
-
-function generateQuote(doc: QuoteSpec): PuzzleQuote {
+function scrambleQuote(doc: QuoteSpec): PuzzleQuote {
   const ring = generateRing()
 
   const guessToClue = new Map<string, string>()
@@ -87,7 +147,7 @@ function generateQuote(doc: QuoteSpec): PuzzleQuote {
     shortAuthor: doc.shortAuthor || doc.author,
     year: doc.year ?? null,
     originalText: doc.text,
-    mapping: [...guessToClue.entries()].map(([real, clue]) => ({ clue, real })),
+    clueToOriginal: new Map([...guessToClue.entries()].map(([real, clue]) => [clue, real])),
     encryptedText,
   }
 }
