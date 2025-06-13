@@ -114,7 +114,7 @@ function initQuoteList(
   markQuoteLinksSolved(listRoot, id => solvedIds.includes(id))
 
   const selectedQuoteId = fragmentToQuoteId(document.location.hash)
-  if (selectedQuoteId) {
+  if (selectedQuoteId && quotes.some(quote => quote.id === selectedQuoteId)) {
     selectPuzzle(selectedQuoteId)
   } else {
     document.location.hash = quoteIdToFragment(quotes[0]!.id)
