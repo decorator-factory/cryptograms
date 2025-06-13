@@ -21,7 +21,9 @@ export function main(opts: MainOptions): void {
       stats.solvedCryptograms.push(quoteId)
       storage.writeStats(stats)
     }
-    document.getElementById(linkFragment(quoteId))?.classList.add("puzzle-link-solved")
+    const quoteLink = document.getElementById(linkFragment(quoteId))
+    if (quoteLink)
+      markLinkNodeAsSolved(quoteLink)
   }
 
   function selectPuzzle(quoteId: string) {
@@ -49,9 +51,9 @@ export function main(opts: MainOptions): void {
         onCompleted(solution) {
           if (isSolvedCorrectly(quote, solution)) {
             markAsSolved(quote.id)
-            showStatus("You solved the puzzle! 🎸")
+            showStatus('🎸 You solved the puzzle! Click on "Select quote" to pick a different quote')
           } else {
-            showStatus("That's not quite the right quote 🤔")
+            showStatus("🤔 That's not quite the right quote")
           }
         },
       }
@@ -79,6 +81,10 @@ function isSolvedCorrectly(
   return true
 }
 
+function markLinkNodeAsSolved(node: HTMLElement) {
+  node.dataset.solved = "true"
+}
+
 function showStatus(message: string) {
   const statusBox = document.querySelector(".status")!
   statusBox.textContent = message
@@ -99,12 +105,13 @@ function initQuoteList(
     const a = document.createElement("a")
 
     a.id = linkFragment(quote.id)
+    a.classList.add("puzzle-link")
     a.href = "#" + a.id
     a.textContent = quote.year ? `${quote.shortAuthor}, ${quote.year}` : quote.shortAuthor
 
     a.addEventListener("click", () => selectPuzzle(quote.id))
     if (solvedIds.includes(quote.id))
-      a.classList.add("puzzle-link-solved")
+      markLinkNodeAsSolved(a)
 
     li.appendChild(a)
     listRoot.appendChild(li)

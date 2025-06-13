@@ -1,23 +1,26 @@
 :root {
-  --font-family-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
-  --font-family-sans: Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', source-sans-pro, sans-serif;
-}
-
-body {
-  font-family: var(--font-family-sans);
-
-  display: grid;
-  grid-template-columns: 1fr minmax(auto, 40rem) minmax(10rem, 1fr);
-  grid-template-rows: 1fr;
-  grid-template-areas: "controls puzzle details";
-
-  align-items: stretch;
+  --font-family-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', 'Menlo', 'Consolas', 'DejaVu Sans Mono', monospace;
+  --font-family-sans: 'Seravek', 'Gill Sans Nova', 'Ubuntu', 'Calibri', 'DejaVu Sans', source-sans-pro, sans-serif;
 }
 
 kbd {
   font-weight: 500;
   color: #666;
   font-family: var(--font-family-mono);
+}
+
+/* Macro grid layout */
+
+body {
+  font-family: var(--font-family-sans);
+  display: grid;
+  grid-template: "controls" auto "details" auto "puzzle" auto / 1fr;
+  align-items: start;
+
+  @media (width >=900px) {
+    grid-template: "controls puzzle details" 1fr / minmax(15rem, 1fr) minmax(auto, 40rem) 1fr;
+    align-items: stretch;
+  }
 }
 
 .controls-panel {
@@ -30,60 +33,149 @@ main {
 
 .details-panel {
   grid-area: details;
-}
 
-.controls-panel,
-.controls-panel>.select-quote,
-.details-panel,
-.quote-author {
-  background: white;
-}
-
-@media (width >=1000px) {
-
-  .controls-panel,
-  .controls-panel>.select-quote,
-  .details-panel,
-  .quote-author {
-    z-index: 100;
-    position: sticky;
-    top: 0px;
+  @media (width >=900px) {
+    justify-self: center;
   }
 }
 
-
-.quote-author__name {
-  font-weight: 600;
+@media (width >=900px) {
+  .stick-to-top {
+    position: sticky;
+    top: 0;
+  }
 }
 
-@media (width < 1000px) {
-  body {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    grid-template-areas:
-      "controls"
-      "details"
-      "puzzle";
-    align-items: start;
+/* Left panel styling */
+
+.controls-panel {
+  display: grid;
+  align-content: start;
+  grid-template-columns: 0 auto 0;
+
+  @media (width >=900px) {
+    grid-template-columns: auto minmax(min-content, 20rem) auto;
+  }
+
+  >details {
+    grid-column-start: 2;
+  }
+
+  @media (width >=900px) {
+    justify-self: center;
   }
 }
 
 .controls-panel>details>summary {
   padding: 0.25rem;
   font-size: 1.5rem;
+
+  @media (width >=900px) {
+    font-size: 2rem;
+  }
+
   cursor: pointer;
 }
 
-.controls-panel__github-link {
-  display: inline-block;
-  margin-bottom: 1rem;
+
+.how-to-play {
+  @media (width >=900px) {
+    margin-top: 6rem;
+  }
 }
+
+.how-to-play__body {
+  max-width: 30rem;
+
+  padding: 1ch;
+
+  p {
+    margin-bottom: 1lh;
+  }
+}
+
+.how-to-play__github-link {
+  display: inline-flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5lh;
+}
+
+.puzzle-choice-list {
+  padding-left: 0.5rem;
+  padding-bottom: 2rem;
+
+  @media (width <900px) {
+    display: flex;
+    gap: 4px;
+    flex-flow: row wrap;
+    padding-bottom: 0;
+  }
+
+  >li {
+    list-style: none;
+  }
+}
+
+.puzzle-link {
+  /* Needed for the checkmark in puzzle-link[data-solved]::after */
+  position: relative;
+  cursor: pointer;
+  display: block;
+  padding: 0.25rem 0.25rem 0;
+  color: #202f8b;
+  text-decoration: none;
+  outline: 1px solid #bdc0d8;
+
+  @media (width >=900px) {
+    border-bottom: 2px solid;
+    border-color: #bdc0d8;
+    outline: none;
+  }
+
+  &:target {
+    outline: 2px solid #202f8b;
+
+    /* Use text-shadow instead of font-weight to avoid layout shifting */
+    text-shadow:
+      0 0 0.5px currentcolor,
+      0 0 2px hsl(from currentcolor h s l / 50%);
+    z-index: 1;
+  }
+
+  &:hover {
+    border-color: #619cf3;
+    outline-color: #2d5a79;
+    background: #f5f8fc;
+  }
+}
+
+.puzzle-link[data-solved] {
+  outline-color: #39aa1d;
+  color: #15380c;
+  background: #e9f08c;
+
+  &:hover {
+    background: #b1f336;
+  }
+
+  &::after {
+    display: block;
+    right: 0;
+    top: 0;
+    float: right;
+    content: "✅";
+    position: absolute;
+    opacity: 0.33;
+  }
+}
+
+/* Right panel styling */
 
 .details-panel {
   display: flex;
-  flex-direction: column;
+  flex-flow: column wrap;
   align-content: end;
-  flex-wrap: wrap;
 }
 
 .quote-author {
@@ -92,43 +184,8 @@ main {
   padding-block: 0.5rem;
   padding-inline: 1rem;
   line-height: 1.1;
-}
 
-.how-to-play__body {
-  max-width: 30rem;
-  padding-inline: 2rem;
-
-  @media (width <1500px) {
-    padding-inline: 0.5rem;
-  }
-
-  p {
-    margin-bottom: 1lh;
-  }
-}
-
-@media (width >=1000px) {
-  .how-to-play {
-    margin-top: 6rem;
-  }
-
-  .controls-panel {
-    justify-self: center;
-
-    >details {
-      >summary {
-        font-size: 2rem;
-        text-align: center;
-      }
-
-    }
-  }
-
-  .details-panel {
-    justify-self: center;
-  }
-
-  .quote-author {
+  @media (width >=900px) {
     border-left: 1px solid #eee;
     margin-top: 8rem;
     top: 2rem;
@@ -136,6 +193,12 @@ main {
     padding-left: 0.5rem;
   }
 }
+
+.quote-author__name {
+  font-weight: 600;
+}
+
+/* Main puzzle styles */
 
 main {
   padding: 1rem;
@@ -148,88 +211,17 @@ h1 {
   text-align: center;
   color: #ccc;
 
-  @media (width <1000px) {
+  @media (width <900px) {
     display: none;
   }
 }
 
-.puzzle-choice-list {
-  padding-left: 0.5rem;
-  padding-bottom: 2rem;
-
-  @media (width <1000px) {
-    display: flex;
-    gap: 1px;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding-bottom: 0;
-  }
-
-  >li {
-    list-style: none;
-
-    a {
-      position: relative;
-      cursor: pointer;
-      display: block;
-      padding: 0 0.25rem;
-
-      border-bottom: 2px solid;
-
-      border-color: #bdc0d8;
-      color: #202f8b;
-      padding-top: 0.25rem;
-      text-decoration: none;
-
-      @media (width <1000px) {
-        border: 1px solid;
-      }
-
-      &:target {
-        border-left-style: solid;
-        border-left-width: 4px;
-      }
-
-
-      &:hover {
-        border-color: #619cf3;
-        color: #2d5a79;
-        background: #f5f8fc;
-      }
-
-      &.puzzle-link-solved {
-        border-color: #39aa1d;
-        color: #0c1f07;
-        background: #e9f08c;
-
-        &::after {
-          display: block;
-          right: 0;
-          top: 0;
-          float: right;
-          content: "✅";
-          position: absolute;
-          opacity: 0.33;
-        }
-
-        &:hover {
-          background: #b1f336;
-        }
-      }
-    }
-  }
-}
-
-/* Main puzzle styles */
-
 .cryptogram-words {
   font-family: var(--font-family-mono);
-  font-size: 2rem;
-
   display: flex;
   flex-wrap: wrap;
-
   gap: 0.66ch calc(1ch + 4px);
+  font-size: 2rem;
 
   @media (width < 640px) {
     font-size: 1.5rem;
@@ -245,38 +237,25 @@ h1 {
   flexbox (.cryptogram-words) to wrap.
   */
   flex-wrap: wrap;
-
   align-items: center;
-
 }
 
 .char {
-  position: relative;
-
   width: calc(1ch + 6px);
-  padding-inline: 3px;
-  padding-block: 2px;
+  padding: 2px 3px;
   line-height: 85%;
   text-transform: uppercase;
-
   border: none;
-  user-select: none;
-  -webkit-user-select: none;
   cursor: default;
   caret-color: transparent;
-
   transition:
     filter 0.1s,
     background 0.2s,
     color 0.2s;
+  background: #f0f0f0;
 
-  &:where(:not(.char-hint)) {
-    background: #f0f0f0;
-  }
-
-  &.char-filled {
-    background: rgb(103, 108, 148);
-    color: white;
+  &:where(.char-hint) {
+    background: transparent;
   }
 
   &::selection {
@@ -285,6 +264,11 @@ h1 {
 
   &::placeholder {
     color: #bfbfbf;
+  }
+
+  &.char-filled {
+    background: rgb(103 108 148);
+    color: white;
   }
 
   &:focus {
@@ -297,11 +281,11 @@ h1 {
 }
 
 .char.char-wrong {
-  background: rgb(185, 34, 29);
+  background: rgb(185 34 29);
   z-index: 3;
 
   &:focus {
-    outline: 2px solid rgb(59, 0, 0);
+    outline: 2px solid rgb(59 0 0);
   }
 }
 
@@ -311,7 +295,6 @@ h1 {
 
 .status {
   display: none;
-
   padding: 0.5rem;
   margin: 0.5rem;
   margin-bottom: 1rem;
