@@ -21,9 +21,7 @@ export function main(opts: MainOptions): void {
       stats.solvedCryptograms.push(quoteId)
       storage.writeStats(stats)
     }
-    const quoteLink = document.getElementById(linkFragment(quoteId))
-    if (quoteLink)
-      markLinkNodeAsSolved(quoteLink)
+    markQuoteLinksSolved(opts.puzzleLinksNode, id => stats.solvedCryptograms.includes(id))
   }
 
   function selectPuzzle(quoteId: string) {
@@ -59,13 +57,15 @@ export function main(opts: MainOptions): void {
       }
     )
     puzzle.applyProgress(progress.get(quoteId))
+
+    markQuoteLinkSelected(opts.puzzleLinksNode, quoteId)
   }
 
   initQuoteList(opts.puzzleLinksNode, stats.solvedCryptograms, quotes, selectPuzzle)
 
   window.addEventListener("popstate", () => {
     // Handle "go back" and "go forward" changing the fragment
-    const selectedQuoteId = unLinkFragment(document.location.hash)
+    const selectedQuoteId = fragmentToQuoteId(document.location.hash)
     if (selectedQuoteId)
       selectPuzzle(selectedQuoteId)
   })
@@ -79,10 +79,6 @@ function isSolvedCorrectly(
     if (quote.clueToOriginal.get(clue) !== guess)
       return false
   return true
-}
-
-function markLinkNodeAsSolved(node: HTMLElement) {
-  node.dataset.solved = "true"
 }
 
 function showStatus(message: string) {
@@ -102,36 +98,56 @@ function initQuoteList(
 ) {
   for (const quote of quotes) {
     const li = document.createElement("li")
-    const a = document.createElement("a")
+    li.dataset.quoteId = quote.id
 
-    a.id = linkFragment(quote.id)
+    const a = document.createElement("a")
     a.classList.add("puzzle-link")
-    a.href = "#" + a.id
+    a.href = "#" + quoteIdToFragment(quote.id)
     a.textContent = quote.year ? `${quote.shortAuthor}, ${quote.year}` : quote.shortAuthor
 
     a.addEventListener("click", () => selectPuzzle(quote.id))
-    if (solvedIds.includes(quote.id))
-      markLinkNodeAsSolved(a)
 
     li.appendChild(a)
     listRoot.appendChild(li)
   }
 
-  const selectedQuoteId = unLinkFragment(document.location.hash)
+  markQuoteLinksSolved(listRoot, id => solvedIds.includes(id))
+
+  const selectedQuoteId = fragmentToQuoteId(document.location.hash)
   if (selectedQuoteId) {
     selectPuzzle(selectedQuoteId)
   } else {
-    document.location.hash = linkFragment(quotes[0]!.id)
+    document.location.hash = quoteIdToFragment(quotes[0]!.id)
     selectPuzzle(quotes[0]!.id)
   }
 }
 
-function linkFragment(quoteId: string): string {
-  return `quote_${quoteId}`
+function markQuoteLinkSelected(listRoot: HTMLElement, quoteId: string) {
+  for (const listItem of listRoot.children as Iterable<HTMLElement>) {
+    const nodeQuoteId = listItem.dataset.quoteId
+    if (nodeQuoteId === quoteId)
+      listItem.dataset.selected = "true"
+    else
+      delete listItem.dataset.selected
+  }
 }
 
-function unLinkFragment(fragment: string): string | null {
-  const match = /^#?quote_(.*)$/.exec(fragment)
+function markQuoteLinksSolved(listRoot: HTMLElement, isSolved: (quoteId: string) => boolean) {
+  for (const listItem of listRoot.children as Iterable<HTMLElement>) {
+    const nodeQuoteId = listItem.dataset.quoteId
+    if (nodeQuoteId && isSolved(nodeQuoteId))
+      listItem.dataset.solved = "true"
+    else
+      delete listItem.dataset.selected
+  }
+}
+
+function quoteIdToFragment(quoteId: string): string {
+  return `quote__${quoteId}`
+}
+
+function fragmentToQuoteId(fragment: string): string | null {
+  const match = /^#?quote__(.*)$/.exec(fragment)
   return match ? match[1]! : null
 }
 
