@@ -209,7 +209,7 @@ h1 {
   margin-top: 2rem;
   margin-bottom: 2rem;
   text-align: center;
-  color: #ccc;
+  color: #909090;
 
   @media (width <900px) {
     display: none;
