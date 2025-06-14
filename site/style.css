@@ -133,7 +133,7 @@ main {
     outline: none;
   }
 
-  &:hover {
+  &:hover, &:focus {
     border-color: #619cf3;
     outline-color: #2d5a79;
     background: #f5f8fc;
@@ -155,7 +155,7 @@ main {
   color: #15380c;
   background: #e9f08c;
 
-  &:hover {
+  &:hover, &:focus {
     background: #b1f336;
   }
 
