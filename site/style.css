@@ -222,9 +222,10 @@ h1 {
   flex-wrap: wrap;
   gap: 0.66ch calc(1ch + 4px);
   font-size: 2rem;
+  text-align: center;
 
   @media (width < 640px) {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
 }
 
@@ -241,6 +242,9 @@ h1 {
 }
 
 .char {
+  /* https://w3c.github.io/wcag/understanding/target-size-minimum.html */
+  min-width: 24px;
+
   width: calc(1ch + 6px);
   padding: 2px 3px;
   line-height: 85%;
